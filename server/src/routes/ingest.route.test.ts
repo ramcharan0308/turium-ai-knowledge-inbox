@@ -10,6 +10,7 @@ describe('Ingestion and Items API', () => {
   let baseUrl: string;
 
   before(async () => {
+    process.env.AI_MODE = 'demo';
     // In-memory test database
     getDatabase(':memory:');
     const app = createApp();
@@ -47,7 +48,7 @@ describe('Ingestion and Items API', () => {
     assert.equal(json.data.title, 'API Test Note');
     assert.ok(json.data.id.startsWith('itm_'));
     assert.equal(json.data.chunkCount, 1);
-    assert.equal(json.data.indexingStatus, 'pending');
+    assert.equal(json.data.indexingStatus, 'ready');
   });
 
   test('POST /ingest automatically derives title if omitted', async () => {
@@ -209,7 +210,7 @@ describe('Ingestion and Items API', () => {
     assert.ok(firstItem.title);
     assert.ok(firstItem.snippet);
     assert.ok(firstItem.chunkCount >= 1);
-    assert.equal(firstItem.indexingStatus, 'pending');
+    assert.equal(firstItem.indexingStatus, 'ready');
   });
 });
 

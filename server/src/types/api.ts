@@ -3,6 +3,7 @@
  */
 
 export type ItemType = 'note' | 'url';
+export type IndexingStatus = 'pending' | 'ready' | 'failed';
 
 export interface ItemEntity {
   id: string;
@@ -12,6 +13,8 @@ export interface ItemEntity {
   raw_content: string;
   created_at: string;
   updated_at: string;
+  indexing_status: IndexingStatus;
+  indexing_error?: string | null;
 }
 
 export interface ChunkEntity {
@@ -19,7 +22,10 @@ export interface ChunkEntity {
   item_id: string;
   chunk_index: number;
   content: string;
-  embedding: string | null;
+  embedding: string | null; // JSON array of floats
+  embedding_provider?: string | null;
+  embedding_model?: string | null;
+  embedding_dimensions?: number | null;
   created_at: string;
 }
 
@@ -32,7 +38,27 @@ export interface ItemListItem {
   chunkCount: number;
   createdAt: string;
   updatedAt: string;
-  indexingStatus: 'pending' | 'indexed';
+  indexingStatus: IndexingStatus;
+  indexingError?: string | null;
+}
+
+export interface Citation {
+  sourceId: string; // e.g. "S1"
+  itemId: string;
+  chunkId: string;
+  itemTitle: string;
+  itemType: ItemType;
+  sourceUrl: string | null;
+  chunkIndex: number;
+  snippet: string;
+  similarityScore: number;
+}
+
+export interface QueryResult {
+  question: string;
+  answer: string;
+  citations: Citation[];
+  mode: 'live' | 'demo';
 }
 
 export interface ApiResponseSuccess<T> {

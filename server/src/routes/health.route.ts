@@ -19,8 +19,11 @@ healthRouter.get('/health', (req: Request, res: Response) => {
     environment: string;
     database: string;
     nodeVersion: string;
-    mockMode: boolean;
-    hasOpenAiKey: boolean;
+    aiMode: string;
+    hasGeminiKey: boolean;
+    hasGroqKey: boolean;
+    embeddingModel: string;
+    chatModel: string;
     timestamp: string;
   }> = {
     success: true,
@@ -29,8 +32,11 @@ healthRouter.get('/health', (req: Request, res: Response) => {
       environment: config.nodeEnv,
       database: dbStatus,
       nodeVersion: process.version,
-      mockMode: config.useExplicitMockMode,
-      hasOpenAiKey: Boolean(config.openaiApiKey && config.openaiApiKey.trim().length > 0),
+      aiMode: config.aiMode,
+      hasGeminiKey: Boolean(config.geminiApiKey && config.geminiApiKey.length > 0),
+      hasGroqKey: Boolean(config.groqApiKey && config.groqApiKey.length > 0),
+      embeddingModel: config.embeddingModel,
+      chatModel: config.chatModel,
       timestamp: new Date().toISOString(),
     },
     meta: {

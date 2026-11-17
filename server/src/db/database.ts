@@ -28,7 +28,9 @@ export function initSchema(db: DatabaseSync): void {
       source_url TEXT,
       raw_content TEXT NOT NULL,
       created_at TEXT NOT NULL,
-      updated_at TEXT NOT NULL
+      updated_at TEXT NOT NULL,
+      indexing_status TEXT NOT NULL DEFAULT 'pending' CHECK(indexing_status IN ('pending', 'ready', 'failed')),
+      indexing_error TEXT
     );
 
     CREATE TABLE IF NOT EXISTS chunks (
@@ -37,30 +39,52 @@ export function initSchema(db: DatabaseSync): void {
       chunk_index INTEGER NOT NULL,
       content TEXT NOT NULL,
       embedding TEXT,
+      embedding_provider TEXT,
+      embedding_model TEXT,
+      embedding_dimensions INTEGER,
       created_at TEXT NOT NULL,
       FOREIGN KEY (item_id) REFERENCES items(id) ON DELETE CASCADE
     );
 
     CREATE INDEX IF NOT EXISTS idx_chunks_item_id ON chunks(item_id);
     CREATE INDEX IF NOT EXISTS idx_chunks_item_chunk ON chunks(item_id, chunk_index);
+    CREATE INDEX IF NOT EXISTS idx_chunks_model ON chunks(embedding_model);
     CREATE INDEX IF NOT EXISTS idx_items_created_at ON items(created_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_items_indexing_status ON items(indexing_status);
   `;
 
   db.exec(schema);
 
-  // Schema migrations for pre-existing tables created during initial scaffolding
+  // Safe schema migrations for existing tables
   try {
     const itemCols = db.prepare('PRAGMA table_info(items);').all() as { name: string }[];
-    if (itemCols.length > 0 && !itemCols.some((col) => col.name === 'updated_at')) {
+    const itemColNames = new Set(itemCols.map((c) => c.name));
+
+    if (!itemColNames.has('updated_at') && itemCols.length > 0) {
       db.exec('ALTER TABLE items ADD COLUMN updated_at TEXT;');
       db.exec('UPDATE items SET updated_at = created_at WHERE updated_at IS NULL;');
     }
+    if (!itemColNames.has('indexing_status') && itemCols.length > 0) {
+      db.exec("ALTER TABLE items ADD COLUMN indexing_status TEXT NOT NULL DEFAULT 'pending';");
+    }
+    if (!itemColNames.has('indexing_error') && itemCols.length > 0) {
+      db.exec('ALTER TABLE items ADD COLUMN indexing_error TEXT;');
+    }
 
     const chunkCols = db.prepare('PRAGMA table_info(chunks);').all() as { name: string }[];
-    if (chunkCols.length > 0) {
-      if (!chunkCols.some((col) => col.name === 'content') && chunkCols.some((col) => col.name === 'text')) {
-        db.exec('ALTER TABLE chunks RENAME COLUMN text TO content;');
-      }
+    const chunkColNames = new Set(chunkCols.map((c) => c.name));
+
+    if (!chunkColNames.has('content') && chunkColNames.has('text')) {
+      db.exec('ALTER TABLE chunks RENAME COLUMN text TO content;');
+    }
+    if (!chunkColNames.has('embedding_provider') && chunkCols.length > 0) {
+      db.exec('ALTER TABLE chunks ADD COLUMN embedding_provider TEXT;');
+    }
+    if (!chunkColNames.has('embedding_model') && chunkCols.length > 0) {
+      db.exec('ALTER TABLE chunks ADD COLUMN embedding_model TEXT;');
+    }
+    if (!chunkColNames.has('embedding_dimensions') && chunkCols.length > 0) {
+      db.exec('ALTER TABLE chunks ADD COLUMN embedding_dimensions INTEGER;');
     }
   } catch (migErr) {
     logger.warn({ migErr }, 'Schema migration check completed');

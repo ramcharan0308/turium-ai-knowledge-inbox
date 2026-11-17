@@ -9,10 +9,12 @@ export interface SavedItem {
   chunkCount: number;
   createdAt: string;
   updatedAt: string;
-  indexingStatus: 'pending' | 'indexed';
+  indexingStatus: 'pending' | 'ready' | 'failed';
+  indexingError?: string | null;
 }
 
 export interface Citation {
+  sourceId: string;
   chunkId: string;
   itemId: string;
   itemTitle: string;
@@ -27,6 +29,7 @@ export interface QueryResult {
   question: string;
   answer: string;
   citations: Citation[];
+  mode: 'live' | 'demo';
 }
 
 export interface HealthStatus {
@@ -34,7 +37,10 @@ export interface HealthStatus {
   environment: string;
   database: string;
   nodeVersion: string;
-  mockMode: boolean;
-  hasOpenAiKey: boolean;
+  aiMode: string;
+  hasGeminiKey: boolean;
+  hasGroqKey: boolean;
+  embeddingModel: string;
+  chatModel: string;
   timestamp: string;
 }

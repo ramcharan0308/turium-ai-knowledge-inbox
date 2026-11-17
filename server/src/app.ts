@@ -1,10 +1,11 @@
-import express, { Express, Request, Response } from 'express';
+import express, { Express } from 'express';
 import cors from 'cors';
 import { httpLogger } from './middleware/logger.middleware.js';
 import { errorHandler } from './middleware/error.middleware.js';
 import { healthRouter } from './routes/health.route.js';
 import { ingestRouter } from './routes/ingest.route.js';
 import { itemsRouter } from './routes/items.route.js';
+import { queryRouter } from './routes/query.route.js';
 
 export function createApp(): Express {
   const app = express();
@@ -29,20 +30,10 @@ export function createApp(): Express {
   // Health and development endpoints
   app.use(healthRouter);
 
-  // Active Phase 3 routes
+  // Active Core APIs
   app.use(ingestRouter);
   app.use(itemsRouter);
-
-  // Placeholder for Phase 4 query route
-  app.post('/query', (_req: Request, res: Response) => {
-    res.status(501).json({
-      success: false,
-      error: {
-        code: 'NOT_IMPLEMENTED',
-        message: 'Endpoint POST /query will be implemented in Phase 4 (Vector RAG).',
-      },
-    });
-  });
+  app.use(queryRouter);
 
   // Centralized error handling middleware
   app.use(errorHandler);

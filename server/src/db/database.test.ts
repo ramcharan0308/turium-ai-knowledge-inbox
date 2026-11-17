@@ -59,6 +59,7 @@ describe('Database and Repository', () => {
       raw_content: 'This is the raw content of the first note.',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+      indexing_status: 'ready',
     };
 
     const chunks: ChunkEntity[] = [
@@ -102,6 +103,7 @@ describe('Database and Repository', () => {
       raw_content: 'Should be rolled back.',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+      indexing_status: 'pending',
     };
 
     // Second chunk has duplicate ID with first chunk, violating PRIMARY KEY constraint
@@ -143,6 +145,7 @@ describe('Database and Repository', () => {
       raw_content: 'Content',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+      indexing_status: 'ready',
     };
 
     const chunks: ChunkEntity[] = [
@@ -175,6 +178,7 @@ describe('Database and Repository', () => {
       raw_content: 'Long article text that survives reopening...',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+      indexing_status: 'ready',
     };
 
     repo.insertItemWithChunks(item, [], db);
@@ -202,6 +206,7 @@ describe('Database and Repository', () => {
         raw_content: `Content for note ${i}`,
         created_at: new Date(Date.now() + i * 1000).toISOString(),
         updated_at: new Date(Date.now() + i * 1000).toISOString(),
+        indexing_status: 'ready',
       };
       repo.insertItemWithChunks(item, [], db);
     }

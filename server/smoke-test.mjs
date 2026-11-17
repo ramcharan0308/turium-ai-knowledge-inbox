@@ -3,6 +3,10 @@ import { getDatabase, closeDatabase } from './dist/db/database.js';
 import fs from 'node:fs';
 import path from 'node:path';
 
+if (!process.env.AI_MODE) {
+  process.env.AI_MODE = 'demo';
+}
+
 const SMOKE_DB_PATH = path.resolve('./data/smoke_test.db');
 const PORT = 3099;
 
