@@ -79,6 +79,18 @@ describe('RagService Grounding and Verification', () => {
     assert.equal(citations[0].sourceId, 'S1');
   });
 
+  test('verifyCitations normalizes unicode lenticular brackets 【S1】 produced by LLM tokenizers', () => {
+    const ragSvc = new RagService({ mode: 'demo' });
+    const rawAnswer = 'Data is stored in SQLite 【S1】 and query retrieval works 〔S2〕.';
+
+    const { cleanedAnswer, citations } = ragSvc.verifyCitations(rawAnswer, sampleChunks);
+
+    assert.equal(cleanedAnswer, 'Data is stored in SQLite [S1] and query retrieval works [S2].');
+    assert.equal(citations.length, 2);
+    assert.equal(citations[0].sourceId, 'S1');
+    assert.equal(citations[1].sourceId, 'S2');
+  });
+
   test('answerQuestion returns strict refusal when retrieved chunks array is empty', async () => {
     const ragSvc = new RagService({ mode: 'demo' });
     const result = await ragSvc.answerQuestion('What is the secret formula?', []);

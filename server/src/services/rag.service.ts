@@ -26,12 +26,16 @@ export class RagService {
   private groq: Groq | null = null;
   private mockClient: RagServiceOptions['groqClient'] | null = null;
   private modeOverride?: 'live' | 'demo';
+  private hasApiKeyOverride: boolean = false;
   private apiKeyOverride?: string;
   public readonly model: string;
 
   constructor(options?: RagServiceOptions) {
     this.modeOverride = options?.mode;
-    this.apiKeyOverride = options?.apiKey;
+    if (options && 'apiKey' in options) {
+      this.hasApiKeyOverride = true;
+      this.apiKeyOverride = options.apiKey;
+    }
     this.model = options?.model || config.chatModel;
 
     if (options?.groqClient) {
@@ -46,7 +50,9 @@ export class RagService {
   private getClient(): Groq | RagServiceOptions['groqClient'] | null {
     if (this.mockClient) return this.mockClient;
     if (this.groq) return this.groq;
-    const key = this.apiKeyOverride || process.env.GROQ_API_KEY || config.groqApiKey;
+    const key = this.hasApiKeyOverride
+      ? this.apiKeyOverride
+      : (process.env.GROQ_API_KEY ?? config.groqApiKey);
     if (key) {
       this.groq = new Groq({ apiKey: key });
       return this.groq;
@@ -80,6 +86,9 @@ export class RagService {
       return { cleanedAnswer: refusalText, citations: [] };
     }
 
+    // Normalize unicode citation brackets (e.g. 【S1】 -> [S1]) produced by some LLM tokenizers
+    const normalizedAnswer = rawAnswer.replace(/[【〔]/g, '[').replace(/[】〕]/g, ']');
+
     const chunkMap = new Map<string, ScoredChunk>();
     chunks.forEach((chunk, index) => {
       chunkMap.set(`S${index + 1}`, chunk);
@@ -89,7 +98,7 @@ export class RagService {
     const citationRegex = /\[S(\d+)\]/g;
 
     // Split answer into sentences / lines to evaluate grounding per claim
-    const rawSegments = rawAnswer
+    const rawSegments = normalizedAnswer
       .split(/(?<=[.!?\n])\s+/)
       .map((s) => s.trim())
       .filter((s) => s.length > 0);

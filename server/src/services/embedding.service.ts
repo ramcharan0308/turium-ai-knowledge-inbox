@@ -32,13 +32,17 @@ export class EmbeddingService {
   private client: GoogleGenAI | null = null;
   private mockClient: EmbeddingProviderOptions['client'] | null = null;
   private modeOverride?: 'live' | 'demo';
+  private hasApiKeyOverride: boolean = false;
   private apiKeyOverride?: string;
   public readonly model: string;
   public readonly dimensions: number;
 
   constructor(options?: EmbeddingProviderOptions) {
     this.modeOverride = options?.mode;
-    this.apiKeyOverride = options?.apiKey;
+    if (options && 'apiKey' in options) {
+      this.hasApiKeyOverride = true;
+      this.apiKeyOverride = options.apiKey;
+    }
     this.model = options?.model || config.embeddingModel;
     this.dimensions = options?.dimensions || config.embeddingDimensions;
 
@@ -54,7 +58,9 @@ export class EmbeddingService {
   private getClient(): GoogleGenAI | EmbeddingProviderOptions['client'] | null {
     if (this.mockClient) return this.mockClient;
     if (this.client) return this.client;
-    const key = this.apiKeyOverride || process.env.GEMINI_API_KEY || config.geminiApiKey;
+    const key = this.hasApiKeyOverride
+      ? this.apiKeyOverride
+      : (process.env.GEMINI_API_KEY ?? config.geminiApiKey);
     if (key) {
       this.client = new GoogleGenAI({ apiKey: key });
       return this.client;

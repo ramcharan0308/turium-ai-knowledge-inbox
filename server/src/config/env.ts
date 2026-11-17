@@ -23,13 +23,31 @@ export interface AppConfig {
 }
 
 export const config: AppConfig = {
-  port: parseInt(process.env.PORT || '3001', 10),
-  nodeEnv: (process.env.NODE_ENV as AppConfig['nodeEnv']) || 'development',
-  databasePath: process.env.DATABASE_PATH || './data/inbox.db',
-  aiMode: (process.env.AI_MODE?.toLowerCase() === 'demo' ? 'demo' : 'live') as AiMode,
-  geminiApiKey: process.env.GEMINI_API_KEY?.trim() || undefined,
-  groqApiKey: process.env.GROQ_API_KEY?.trim() || undefined,
-  embeddingModel: process.env.EMBEDDING_MODEL || 'gemini-embedding-001',
-  embeddingDimensions: parseInt(process.env.EMBEDDING_DIMENSIONS || '768', 10),
-  chatModel: process.env.CHAT_MODEL || 'llama-3.3-70b-versatile',
+  get port(): number {
+    return parseInt(process.env.PORT || '3001', 10);
+  },
+  get nodeEnv(): AppConfig['nodeEnv'] {
+    return (process.env.NODE_ENV as AppConfig['nodeEnv']) || 'development';
+  },
+  get databasePath(): string {
+    return process.env.DATABASE_PATH || './data/inbox.db';
+  },
+  get aiMode(): AiMode {
+    return (process.env.AI_MODE?.toLowerCase() === 'demo' ? 'demo' : 'live') as AiMode;
+  },
+  get geminiApiKey(): string | undefined {
+    return process.env.GEMINI_API_KEY?.trim() || undefined;
+  },
+  get groqApiKey(): string | undefined {
+    return process.env.GROQ_API_KEY?.trim() || undefined;
+  },
+  get embeddingModel(): string {
+    return process.env.EMBEDDING_MODEL || 'gemini-embedding-001';
+  },
+  get embeddingDimensions(): number {
+    return parseInt(process.env.EMBEDDING_DIMENSIONS || '768', 10);
+  },
+  get chatModel(): string {
+    return process.env.CHAT_MODEL || 'openai/gpt-oss-120b';
+  },
 };
