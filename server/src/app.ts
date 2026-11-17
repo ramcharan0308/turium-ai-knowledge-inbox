@@ -3,6 +3,8 @@ import cors from 'cors';
 import { httpLogger } from './middleware/logger.middleware.js';
 import { errorHandler } from './middleware/error.middleware.js';
 import { healthRouter } from './routes/health.route.js';
+import { ingestRouter } from './routes/ingest.route.js';
+import { itemsRouter } from './routes/items.route.js';
 
 export function createApp(): Express {
   const app = express();
@@ -27,33 +29,17 @@ export function createApp(): Express {
   // Health and development endpoints
   app.use(healthRouter);
 
-  // Placeholder route handlers for required assignment routes (to be implemented in subsequent phases)
-  app.post('/ingest', (_req: Request, res: Response) => {
-    res.status(501).json({
-      success: false,
-      error: {
-        code: 'NOT_IMPLEMENTED',
-        message: 'Endpoint POST /ingest will be implemented in Phase 3.',
-      },
-    });
-  });
+  // Active Phase 3 routes
+  app.use(ingestRouter);
+  app.use(itemsRouter);
 
-  app.get('/items', (_req: Request, res: Response) => {
-    res.status(501).json({
-      success: false,
-      error: {
-        code: 'NOT_IMPLEMENTED',
-        message: 'Endpoint GET /items will be implemented in Phase 3.',
-      },
-    });
-  });
-
+  // Placeholder for Phase 4 query route
   app.post('/query', (_req: Request, res: Response) => {
     res.status(501).json({
       success: false,
       error: {
         code: 'NOT_IMPLEMENTED',
-        message: 'Endpoint POST /query will be implemented in Phase 4.',
+        message: 'Endpoint POST /query will be implemented in Phase 4 (Vector RAG).',
       },
     });
   });

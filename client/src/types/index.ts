@@ -8,6 +8,8 @@ export interface SavedItem {
   snippet: string;
   chunkCount: number;
   createdAt: string;
+  updatedAt: string;
+  indexingStatus: 'pending' | 'indexed';
 }
 
 export interface Citation {
