@@ -4,6 +4,7 @@ import { Server } from 'node:http';
 import { createApp } from '../app.js';
 import { getDatabase, closeDatabase } from '../db/database.js';
 import { ScraperService } from '../services/scraper.service.js';
+import { AppError, ErrorCode } from '../types/api.js';
 
 describe('Ingestion and Items API', () => {
   let server: Server;
@@ -385,6 +386,36 @@ describe('ScraperService Unit and SSRF Edge Cases', () => {
       async () => scraper.scrapeUrl('https://example.com/document.pdf'),
       (err: unknown) => {
         return err instanceof Error && err.message.includes('Unsupported Content-Type');
+      }
+    );
+  });
+
+  test('blocks connection-level DNS rebinding when socket lookup resolves to restricted destination', async () => {
+    const mockPreflightDns = async () => [{ address: '93.184.216.34', family: 4 }];
+
+    // Simulates connection-time interception where undici socket aborts on restricted IP
+    const mockFetch: typeof fetch = async () => {
+      const err = new TypeError('fetch failed');
+      (err as { cause?: unknown }).cause = new AppError(
+        422,
+        ErrorCode.SSRF_RESTRICTED,
+        'Connection to restricted IP address 127.0.0.1 blocked by SSRF firewall.'
+      );
+      throw err;
+    };
+
+    const scraper = new ScraperService({
+      fetchFn: mockFetch,
+      dnsLookupFn: mockPreflightDns,
+    });
+
+    await assert.rejects(
+      async () => scraper.scrapeUrl('https://malicious-rebind.com/attack'),
+      (err: unknown) => {
+        assert.ok(err instanceof AppError);
+        assert.equal(err.statusCode, 422);
+        assert.equal(err.code, 'SSRF_RESTRICTED');
+        return true;
       }
     );
   });

@@ -205,18 +205,26 @@ export class ItemsRepository {
   }
 
   /**
-   * Retrieve unindexed or failed items for background recovery
+   * Retrieve unindexed or recoverable items for startup recovery.
+   * Prioritizes pending items (interrupted ingestions); limits batch size to prevent API exhaustion.
+   * Excludes permanent errors (missing API key, invalid key, unauthenticated) to avoid repeated retries.
    */
-  public getPendingOrFailedItems(dbParam?: DatabaseSync): ItemEntity[] {
+  public getRecoverableItems(limit = 10, dbParam?: DatabaseSync): ItemEntity[] {
     const db = this.getDb(dbParam);
     const stmt = db.prepare(`
       SELECT id, type, title, source_url, raw_content, created_at, updated_at, indexing_status, indexing_error
       FROM items
-      WHERE indexing_status IN ('pending', 'failed')
-      ORDER BY created_at ASC;
+      WHERE indexing_status = 'pending'
+         OR (indexing_status = 'failed' 
+             AND (indexing_error IS NULL 
+                  OR (indexing_error NOT LIKE '%API_KEY%' 
+                      AND indexing_error NOT LIKE '%not configured%' 
+                      AND indexing_error NOT LIKE '%unauthenticated%')))
+      ORDER BY CASE WHEN indexing_status = 'pending' THEN 0 ELSE 1 END, created_at ASC
+      LIMIT ?;
     `);
 
-    const rows = stmt.all() as Record<string, unknown>[];
+    const rows = stmt.all(limit) as Record<string, unknown>[];
     return rows.map((row) => ({
       id: String(row.id),
       type: row.type as ItemEntity['type'],
@@ -228,6 +236,13 @@ export class ItemsRepository {
       indexing_status: row.indexing_status as IndexingStatus,
       indexing_error: row.indexing_error ? String(row.indexing_error) : null,
     }));
+  }
+
+  /**
+   * Retrieve unindexed or failed items for background recovery
+   */
+  public getPendingOrFailedItems(dbParam?: DatabaseSync): ItemEntity[] {
+    return this.getRecoverableItems(50, dbParam);
   }
 
   /**

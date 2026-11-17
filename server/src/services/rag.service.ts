@@ -56,12 +56,30 @@ export class RagService {
 
   /**
    * Deterministically verify and map all cited source tags [S1], [S2] against retrieved chunks.
-   * Strips hallucinated/unsupported citations from the answer string.
+   *
+   * Citation Correctness & Anti-Hallucination Guarantees:
+   * 1. Merely stripping a nonexistent citation (e.g. [S9]) does NOT make an unsupported claim grounded.
+   * 2. Any sentence whose assertions rely solely on unsupported/hallucinated citation tags is removed.
+   * 3. If zero valid citations remain, or if all claims were unsupported, returns the strict refusal:
+   *    "Based on your saved notes and articles, there is insufficient information to answer this question."
+   *    with empty citations.
+   * 4. Every preserved citation in the returned array directly maps to a real, retrieved chunk.
    */
   public verifyCitations(
     rawAnswer: string,
     chunks: ScoredChunk[]
   ): { cleanedAnswer: string; citations: Citation[] } {
+    const refusalText =
+      'Based on your saved notes and articles, there is insufficient information to answer this question.';
+
+    if (chunks.length === 0 || !rawAnswer.trim()) {
+      return { cleanedAnswer: refusalText, citations: [] };
+    }
+
+    if (rawAnswer.trim() === refusalText) {
+      return { cleanedAnswer: refusalText, citations: [] };
+    }
+
     const chunkMap = new Map<string, ScoredChunk>();
     chunks.forEach((chunk, index) => {
       chunkMap.set(`S${index + 1}`, chunk);
@@ -70,19 +88,68 @@ export class RagService {
     const citedSourceIds = new Set<string>();
     const citationRegex = /\[S(\d+)\]/g;
 
-    // Replace invalid/hallucinated citation tags with empty string
-    const cleanedAnswer = rawAnswer.replace(citationRegex, (match, num) => {
-      const sourceId = `S${num}`;
-      if (chunkMap.has(sourceId)) {
-        citedSourceIds.add(sourceId);
-        return match;
+    // Split answer into sentences / lines to evaluate grounding per claim
+    const rawSegments = rawAnswer
+      .split(/(?<=[.!?\n])\s+/)
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+
+    const validSegments: string[] = [];
+
+    for (const segment of rawSegments) {
+      const allTagsInSegment = Array.from(segment.matchAll(citationRegex));
+
+      if (allTagsInSegment.length === 0) {
+        // Segment has no citation tags
+        validSegments.push(segment);
+        continue;
       }
-      // Drop hallucinated source ID
-      return '';
-    }).replace(/[ \t]{2,}/g, ' ').trim();
+
+      // Check which tags are valid vs unsupported
+      const validTags = allTagsInSegment.filter((m) => chunkMap.has(`S${m[1]}`));
+      const unsupportedTags = allTagsInSegment.filter((m) => !chunkMap.has(`S${m[1]}`));
+
+      // If segment only cited unsupported/hallucinated tags, it is ungrounded -> drop it
+      if (validTags.length === 0 && unsupportedTags.length > 0) {
+        logger.warn(
+          { segment, unsupportedCount: unsupportedTags.length },
+          'Dropping unsupported claim with phantom citation tags'
+        );
+        continue;
+      }
+
+      // If segment has at least one valid tag, record the valid source IDs and strip any phantom tags
+      validTags.forEach((m) => citedSourceIds.add(`S${m[1]}`));
+
+      const cleanedSegment = segment
+        .replace(citationRegex, (match, num) => {
+          const sourceId = `S${num}`;
+          if (chunkMap.has(sourceId)) {
+            return match;
+          }
+          return '';
+        })
+        .replace(/[ \t]{2,}/g, ' ')
+        .replace(/\s+([.,!?])/g, '$1')
+        .trim();
+
+      if (cleanedSegment.length > 0) {
+        validSegments.push(cleanedSegment);
+      }
+    }
+
+    // If no valid citations were made anywhere in the response, the answer is ungrounded
+    if (citedSourceIds.size === 0) {
+      logger.warn(
+        { rawAnswerLength: rawAnswer.length },
+        'Answer lacked valid grounded citations; reverting to strict refusal'
+      );
+      return { cleanedAnswer: refusalText, citations: [] };
+    }
+
+    const cleanedAnswer = validSegments.join(' ').replace(/[ \t]{2,}/g, ' ').trim();
 
     const citations: Citation[] = [];
-    // Maintain source order
     chunks.forEach((chunk, index) => {
       const sourceId = `S${index + 1}`;
       if (citedSourceIds.has(sourceId)) {

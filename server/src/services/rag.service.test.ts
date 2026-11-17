@@ -44,13 +44,37 @@ describe('RagService Grounding and Verification', () => {
     assert.equal(citations[1].sourceUrl, 'https://docs.turium.ai/providers');
   });
 
-  test('verifyCitations strips hallucinated citation tags like [S9] from output text', () => {
+  test('verifyCitations removes claims backed solely by phantom citations like [S9]', () => {
     const ragSvc = new RagService({ mode: 'demo' });
-    const rawAnswer = 'This fact is from source one [S1], but this phantom fact came out of nowhere [S9]!';
+    const rawAnswer = 'This fact is from source one [S1]. This phantom fact came out of nowhere [S9]!';
 
     const { cleanedAnswer, citations } = ragSvc.verifyCitations(rawAnswer, sampleChunks);
 
-    assert.equal(cleanedAnswer, 'This fact is from source one [S1], but this phantom fact came out of nowhere !');
+    assert.equal(cleanedAnswer, 'This fact is from source one [S1].');
+    assert.equal(citations.length, 1);
+    assert.equal(citations[0].sourceId, 'S1');
+  });
+
+  test('verifyCitations returns refusal when answer contains only hallucinated citations', () => {
+    const ragSvc = new RagService({ mode: 'demo' });
+    const rawAnswer = 'The secret formula is XYZ [S9] and was found in sector 7 [S8].';
+
+    const { cleanedAnswer, citations } = ragSvc.verifyCitations(rawAnswer, sampleChunks);
+
+    assert.equal(
+      cleanedAnswer,
+      'Based on your saved notes and articles, there is insufficient information to answer this question.'
+    );
+    assert.equal(citations.length, 0);
+  });
+
+  test('verifyCitations preserves mixed sentences while stripping unsupported tags', () => {
+    const ragSvc = new RagService({ mode: 'demo' });
+    const rawAnswer = 'This sentence mentions valid source [S1] and unsupported source [S9].';
+
+    const { cleanedAnswer, citations } = ragSvc.verifyCitations(rawAnswer, sampleChunks);
+
+    assert.equal(cleanedAnswer, 'This sentence mentions valid source [S1] and unsupported source.');
     assert.equal(citations.length, 1);
     assert.equal(citations[0].sourceId, 'S1');
   });
@@ -115,10 +139,10 @@ describe('RagService Grounding and Verification', () => {
     assert.ok(capturedPrompt.includes('[S1] Title: "Architecture Overview"'));
     assert.ok(capturedPrompt.includes('[S2] Title: "Provider Docs"'));
 
-    // Verify phantom citation [S5] was stripped
+    // Verify phantom sentence [S5] was completely dropped rather than left ungrounded
     assert.equal(
       result.answer,
-      'The application is built with SQLite [S1] and powered by Groq LLM [S2]. Hallucination .'
+      'The application is built with SQLite [S1] and powered by Groq LLM [S2].'
     );
     assert.equal(result.citations.length, 2);
     assert.equal(result.citations[0].sourceId, 'S1');

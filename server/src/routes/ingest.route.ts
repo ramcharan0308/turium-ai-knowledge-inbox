@@ -72,23 +72,36 @@ export async function indexItemChunks(
 }
 
 /**
- * Recovers all pending or failed items in the database
+ * Recovers pending or failed items in the database with protection against unbounded retries
  */
-export async function recoverPendingItems(): Promise<number> {
-  const pendingItems = itemsRepository.getPendingOrFailedItems();
-  if (pendingItems.length === 0) {
+export async function recoverPendingItems(limit = 10): Promise<number> {
+  const recoverableItems = itemsRepository.getRecoverableItems(limit);
+  if (recoverableItems.length === 0) {
     return 0;
   }
 
-  logger.info({ count: pendingItems.length }, 'Recovering unindexed/pending items');
+  logger.info({ count: recoverableItems.length }, 'Recovering unindexed/pending items');
   let recoveredCount = 0;
 
-  for (const item of pendingItems) {
+  for (const item of recoverableItems) {
     const chunks = itemsRepository.getChunksByItemId(item.id);
     if (chunks.length > 0) {
       const res = await indexItemChunks(item.id, chunks);
       if (res.status === 'ready') {
         recoveredCount++;
+      } else {
+        const isPermanentOrRateLimit =
+          res.error?.includes('API_KEY') ||
+          res.error?.includes('not configured') ||
+          res.error?.includes('RATE_LIMIT') ||
+          res.error?.includes('RESOURCE_EXHAUSTED');
+        if (isPermanentOrRateLimit) {
+          logger.warn(
+            { itemId: item.id, error: res.error },
+            'Halting startup recovery due to provider authentication or quota limit'
+          );
+          break;
+        }
       }
     }
   }

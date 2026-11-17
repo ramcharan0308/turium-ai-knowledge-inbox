@@ -229,4 +229,40 @@ describe('Indexing Lifecycle and Recovery', () => {
     assert.equal(chunksSecondPass.length, 1);
     assert.equal(chunksSecondPass[0].id, 'chk_idem_1');
   });
+
+  test('skips items marked with permanent auth errors from automatic startup recovery', async () => {
+    process.env.AI_MODE = 'demo';
+    const now = new Date().toISOString();
+
+    const permanentFailItem: ItemEntity = {
+      id: 'itm_perm_fail',
+      type: 'note',
+      title: 'Permanent Failure Note',
+      source_url: null,
+      raw_content: 'This note permanently failed due to missing API key.',
+      created_at: now,
+      updated_at: now,
+      indexing_status: 'failed',
+      indexing_error: 'GEMINI_API_KEY is not configured. Set GEMINI_API_KEY in server/.env',
+    };
+    const chunks: ChunkEntity[] = [
+      {
+        id: 'chk_perm_1',
+        item_id: 'itm_perm_fail',
+        chunk_index: 0,
+        content: 'This note permanently failed due to missing API key.',
+        embedding: null,
+        created_at: now,
+      },
+    ];
+
+    itemsRepository.insertItemWithChunks(permanentFailItem, chunks, db);
+
+    // Run recovery
+    const recoveredCount = await recoverPendingItems();
+    assert.equal(recoveredCount, 0, 'Should not recover permanent auth failures');
+
+    const itemAfter = itemsRepository.getItemById('itm_perm_fail', db);
+    assert.equal(itemAfter?.indexing_status, 'failed');
+  });
 });

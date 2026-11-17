@@ -1,6 +1,8 @@
 import dns from 'node:dns/promises';
+import nodeDns from 'node:dns';
 import net from 'node:net';
 import * as cheerio from 'cheerio';
+import { Agent } from 'undici';
 import { AppError, ErrorCode } from '../types/api.js';
 import { logger } from '../middleware/logger.middleware.js';
 
@@ -18,6 +20,7 @@ export interface ScraperOptions {
   maxRedirects?: number;
   fetchFn?: typeof fetch;
   dnsLookupFn?: (hostname: string) => Promise<{ address: string; family: number }[]>;
+  dispatcher?: Agent;
 }
 
 export class ScraperService {
@@ -26,6 +29,7 @@ export class ScraperService {
   private maxRedirects: number;
   private fetchFn: typeof fetch;
   private dnsLookupFn: (hostname: string) => Promise<{ address: string; family: number }[]>;
+  private safeDispatcher: Agent;
 
   constructor(options?: ScraperOptions) {
     this.timeoutMs = options?.timeoutMs ?? 8000;
@@ -36,6 +40,69 @@ export class ScraperService {
       options?.dnsLookupFn ??
       (async (hostname: string) => {
         return dns.lookup(hostname, { all: true });
+      });
+
+    // Connection-level socket protection against DNS Rebinding (TOCTOU attacks)
+    this.safeDispatcher =
+      options?.dispatcher ??
+      new Agent({
+        connect: {
+          lookup: (
+            hostname: string,
+            opts: unknown,
+            callback: (
+              err: NodeJS.ErrnoException | null,
+              address: string | nodeDns.LookupAddress[],
+              family?: number
+            ) => void
+          ) => {
+            // Check direct IP destinations at socket creation time
+            if (net.isIP(hostname)) {
+              if (this.isRestrictedIp(hostname)) {
+                return callback(
+                  new AppError(
+                    422,
+                    ErrorCode.SSRF_RESTRICTED,
+                    `Connection to restricted IP '${hostname}' blocked by connection-level firewall.`
+                  ) as unknown as NodeJS.ErrnoException,
+                  hostname
+                );
+              }
+              const family = net.isIPv6(hostname) ? 6 : 4;
+              const optsObj = opts as { all?: boolean } | undefined;
+              if (optsObj && optsObj.all) {
+                return callback(null, [{ address: hostname, family }]);
+              }
+              return callback(null, hostname, family);
+            }
+
+            // Connection-time DNS resolution directly in the socket setup path
+            nodeDns.lookup(hostname, { all: true }, (err, addresses) => {
+              if (err) return callback(err, '');
+              if (!addresses || addresses.length === 0) {
+                return callback(new Error(`No DNS records found for ${hostname}`), '');
+              }
+              for (const addr of addresses) {
+                if (this.isRestrictedIp(addr.address)) {
+                  return callback(
+                    new AppError(
+                      422,
+                      ErrorCode.SSRF_RESTRICTED,
+                      `Connection to restricted IP '${addr.address}' blocked by connection-level SSRF firewall.`
+                    ) as unknown as NodeJS.ErrnoException,
+                    addr.address
+                  );
+                }
+              }
+              const optsObj = opts as { all?: boolean } | undefined;
+              if (optsObj && optsObj.all) {
+                callback(null, addresses);
+              } else {
+                callback(null, addresses[0].address, addresses[0].family);
+              }
+            });
+          },
+        },
       });
   }
 
@@ -232,18 +299,42 @@ export class ScraperService {
 
       let response: Response;
       try {
-        response = await this.fetchFn(currentUrl, {
+        const fetchOptions: RequestInit & { dispatcher?: Agent } = {
           method: 'GET',
           redirect: 'manual',
           signal: controller.signal,
           headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 (TuriumAI-KnowledgeInbox/1.0)',
+            'User-Agent':
+              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 (TuriumAI-KnowledgeInbox/1.0)',
             Accept: 'text/html,application/xhtml+xml,text/plain;q=0.9,*/*;q=0.8',
             'Accept-Language': 'en-US,en;q=0.9',
           },
-        });
-      } catch (err) {
+        };
+
+        if (this.fetchFn === fetch) {
+          fetchOptions.dispatcher = this.safeDispatcher;
+        }
+
+        response = await this.fetchFn(currentUrl, fetchOptions);
+      } catch (err: unknown) {
         clearTimeout(timeoutId);
+        if (err instanceof AppError) {
+          throw err;
+        }
+        const cause = (err as { cause?: unknown })?.cause;
+        if (cause instanceof AppError) {
+          throw cause;
+        }
+        if (
+          (cause instanceof Error && cause.message.includes('SSRF firewall')) ||
+          (err instanceof Error && err.message.includes('SSRF firewall'))
+        ) {
+          throw new AppError(
+            422,
+            ErrorCode.SSRF_RESTRICTED,
+            'Connection to restricted IP address blocked by connection-level SSRF firewall.'
+          );
+        }
         if (err instanceof Error && err.name === 'AbortError') {
           throw new AppError(
             504,
