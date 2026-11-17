@@ -2,41 +2,44 @@
 
 @layer base {
   :root {
-    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 
-    /* Warm Editorial Palette (Stone / Paper / Terracotta / Deep Teal) */
-    --color-canvas: #fbfbfa;
-    --color-surface: #ffffff;
-    --color-surface-subtle: #f5f5f4;
-    --color-border: #e7e5e4;
-    --color-border-hover: #d6d3d1;
-    --color-border-subtle: #f0eeeb;
+    /* Cocoa × Eucalyptus Design Tokens */
+    --color-canvas: #191b19;
+    --color-surface: #292d29;
+    --color-surface-subtle: #202420;
+    --color-surface-elevated: #343a34;
 
-    --color-text-primary: #1c1917;
-    --color-text-secondary: #57534e;
-    --color-text-muted: #a8a29e;
+    --color-border: #485148;
+    --color-border-hover: #5c665c;
+    --color-border-subtle: #333933;
 
-    /* Accents */
-    --color-primary: #0d9488;
-    --color-primary-hover: #0f766e;
-    --color-terracotta: #c2410c;
-    --color-terracotta-subtle: #fff7ed;
-    --color-teal-subtle: #f0fdfa;
-    --color-ring: #0d9488;
+    --color-text-primary: #f1f0ea;
+    --color-text-secondary: #b8c0b6;
+    --color-text-muted: #849082;
+
+    --color-eucalyptus: #a8c8b5;
+    --color-eucalyptus-hover: #c0dacb;
+    --color-eucalyptus-subtle: #252e27;
+
+    --color-cocoa: #d4a373;
+    --color-cocoa-subtle: #2d2319;
+
+    --color-ring: #a8c8b5;
   }
 
   body {
     font-family: var(--font-sans);
-    background-color: var(--color-canvas);
-    color: var(--color-text-primary);
+    background-color: #191b19;
+    color: #f1f0ea;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     min-height: 100vh;
   }
 }
 
-/* Custom subtle scrollbar */
+/* Custom Cocoa-Dark Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -47,12 +50,13 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #d6d3d1;
+  background: #343a34;
   border-radius: 9999px;
+  border: 1px solid #485148;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #a8a29e;
+  background: #485148;
 }
 
 /* Citation interactive tag animation */

@@ -65,16 +65,16 @@ function ToastItem({ toast, onDismiss }: { toast: ToastMessage; onDismiss: () =>
 
   const typeConfig = {
     success: {
-      icon: <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />,
-      bg: 'bg-white border-emerald-200 text-stone-900',
+      icon: <CheckCircle2 className="w-4 h-4 text-[#4ADE80] shrink-0" />,
+      bg: 'bg-[#202D23] border-[#2A4B35] text-[#F1F0EA]',
     },
     error: {
-      icon: <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />,
-      bg: 'bg-white border-rose-200 text-stone-900',
+      icon: <AlertCircle className="w-4 h-4 text-[#FB7185] shrink-0" />,
+      bg: 'bg-[#2D1D20] border-[#54222B] text-[#F1F0EA]',
     },
     info: {
-      icon: <Info className="w-4 h-4 text-teal-600 shrink-0" />,
-      bg: 'bg-white border-teal-200 text-stone-900',
+      icon: <Info className="w-4 h-4 text-[#A8C8B5] shrink-0" />,
+      bg: 'bg-[#202D24] border-[#3E4D42] text-[#F1F0EA]',
     },
   }[toast.type];
 
@@ -83,18 +83,18 @@ function ToastItem({ toast, onDismiss }: { toast: ToastMessage; onDismiss: () =>
       initial={{ opacity: 0, y: 16, scale: 0.96 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.15 } }}
-      className={`pointer-events-auto p-3.5 rounded-xl border shadow-lg flex items-start gap-3 text-sm ${typeConfig.bg}`}
+      className={`pointer-events-auto p-3.5 rounded-xl border shadow-xl flex items-start gap-3 text-sm ${typeConfig.bg}`}
       role="status"
     >
       {typeConfig.icon}
       <div className="flex-1 min-w-0">
-        {toast.title && <div className="font-semibold text-xs text-stone-900 mb-0.5">{toast.title}</div>}
-        <div className="text-xs text-stone-600 leading-relaxed break-words">{toast.message}</div>
+        {toast.title && <div className="font-semibold text-xs text-[#F1F0EA] mb-0.5">{toast.title}</div>}
+        <div className="text-xs text-[#B8C0B6] leading-relaxed break-words">{toast.message}</div>
       </div>
       <button
         type="button"
         onClick={onDismiss}
-        className="p-1 text-stone-400 hover:text-stone-600 rounded-md transition-colors"
+        className="p-1 text-[#849082] hover:text-[#F1F0EA] rounded-md transition-colors"
         aria-label="Dismiss notification"
       >
         <X className="w-3.5 h-3.5" />

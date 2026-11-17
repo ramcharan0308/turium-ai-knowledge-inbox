@@ -68,7 +68,6 @@ export function App() {
       setOffset((prev) => prev + res.items.length);
       setTotalItems(res.total);
     } catch (err: unknown) {
-      // ignore or show error
       console.error('Failed to load more items', err);
     } finally {
       setLoadingMore(false);
@@ -93,7 +92,7 @@ export function App() {
     setItems((prev) => [newItem, ...prev.filter((i) => i.id !== newItem.id)]);
     setTotalItems((prev) => prev + 1);
 
-    // After a brief moment, reload to get real snippet and updated chunk representations
+    // Refresh after brief delay to get populated chunks from server
     setTimeout(() => {
       api.getItems({ limit: PAGE_LIMIT, offset: 0 }).then((res) => {
         setItems(res.items);
@@ -106,7 +105,7 @@ export function App() {
 
   return (
     <ToastProvider>
-      <div className="min-h-screen flex flex-col bg-[#FBFBFA] text-[#1C1917] antialiased selection:bg-teal-100 selection:text-teal-900">
+      <div className="min-h-screen flex flex-col bg-[#191B19] text-[#F1F0EA] antialiased selection:bg-[#252E27] selection:text-[#A8C8B5]">
         {/* Workspace Navigation Header */}
         <Header
           health={health}
@@ -144,14 +143,14 @@ export function App() {
         </main>
 
         {/* Editorial Footer */}
-        <footer className="border-t border-stone-200 bg-white py-6 mt-12">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between text-xs font-mono text-stone-500 gap-3">
+        <footer className="border-t border-[#485148] bg-[#202420] py-6 mt-12">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between text-xs font-mono text-[#B8C0B6] gap-3">
             <div className="flex items-center space-x-2">
-              <span className="font-semibold text-stone-800">Turium AI</span>
+              <span className="font-semibold text-[#F1F0EA]">Turium AI</span>
               <span>—</span>
-              <span>Knowledge Inbox</span>
+              <span className="text-[#A8C8B5]">Cocoa × Eucalyptus Knowledge Desk</span>
             </div>
-            <div className="text-stone-400">
+            <div className="text-[#849082]">
               Clarity over beauty · Zero-hallucination RAG · Gemini 768d + Groq 120B
             </div>
           </div>

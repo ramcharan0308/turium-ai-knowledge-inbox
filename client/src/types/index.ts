@@ -15,6 +15,19 @@ export interface SavedItem {
   rawContent?: string | null;
 }
 
+export interface ItemDetail {
+  id: string;
+  type: ItemType;
+  title: string;
+  sourceUrl?: string | null;
+  rawContent: string;
+  chunkCount: number;
+  createdAt: string;
+  updatedAt: string;
+  indexingStatus: IndexingStatus;
+  indexingError?: string | null;
+}
+
 export interface IngestResponse {
   id: string;
   type: ItemType;

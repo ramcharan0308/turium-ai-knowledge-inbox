@@ -1,72 +1,63 @@
 # Design System Master Specification: Turium AI Knowledge Inbox
+## Direction: Cocoa × Eucalyptus (Dark-First Premium Editorial)
 
-## 1. Product Identity & Philosophy
+### 1. Product Identity & Philosophy
 
-**Product Name:** Turium AI Knowledge Inbox  
-**Role:** Minimal, production-grade knowledge management desk for ingesting notes & URLs and performing grounded, citation-backed semantic retrieval.  
-**Core Motto:** *Clarity over beauty · Zero-hallucination RAG*  
-**Aesthetic Personality:** Modern Editorial / Swiss Monospace Studio (Attio, Craft, ReadCV, Linear).  
+**Product Name:** Turium AI Knowledge Inbox
+**Role:** Minimal, production-grade knowledge management desk for ingesting notes & URLs and performing grounded, citation-backed semantic retrieval.
+**Core Motto:** *Clarity over beauty · Zero-hallucination RAG*
+**Aesthetic Personality:** Sophisticated Dark Editorial / Swiss Monospace Studio (Linear, Raycast, Attio, ReadCV).
 **Explicit Anti-Patterns:**
 - No generic purple/indigo AI glows or pulsing neon gradients.
-- No heavy WebGL shaders or performance-degrading canvas animations (e.g. Vanta.js).
+- No harsh pure-black backgrounds (`#000000`); strictly warm cocoa-gray charcoal (`#191B19`).
+- No heavy WebGL shaders or performance-degrading canvas animations.
 - No glassmorphic blur stacks that hinder text legibility.
-- No emojis used as UI icons (strictly SVG iconography via Lucide).
+- No unstyled white components or mismatched light surfaces.
 
 ---
 
-## 2. Research Findings from UI/UX Pro Max
+### 2. Design Tokens: Cocoa × Eucalyptus
 
-1. **Information Architecture (Product Demo + Features Pattern):**
-   - Clear distinction between Ingestion (Input Rail) and Querying (Retrieval Desk).
-   - Expandable knowledge cards with source metadata.
-   - Grounded Q&A with transparent citations and similarity match scores.
-2. **Form & Input UX Guidelines:**
-   - Explicit visible labels above inputs (never rely solely on placeholders).
-   - Strict input types (`type="url"` with clear error states, `type="text"`).
-   - Instant visual feedback on ingestion and retrieval states.
-3. **Accessibility Baseline:**
-   - 4.5:1 minimum contrast ratio for body copy.
-   - Distinct, visible focus rings for full keyboard navigation (`--color-ring`).
-   - Strict compliance with `prefers-reduced-motion`.
-
----
-
-## 3. Design Tokens
-
-### Color Tokens
+#### Core Color Palette
 
 | Token Name | Hex Value | Role / Purpose |
 | :--- | :--- | :--- |
-| `--color-canvas` | `#F8FAFC` | Primary light canvas background (slate-50) |
-| `--color-canvas-dark` | `#0D1117` | Dark mode canvas background |
-| `--color-surface` | `#FFFFFF` | Card & input container background |
-| `--color-surface-subtle` | `#F1F5F9` | Secondary background / table headers (slate-100) |
-| `--color-border` | `#E2E8F0` | Subtle structural 1px border (slate-200) |
-| `--color-border-hover` | `#CBD5E1` | Card hover border (slate-300) |
-| `--color-text-primary` | `#0F172A` | High-contrast readable body text (slate-900) |
-| `--color-text-secondary` | `#475569` | Secondary descriptions, timestamps (slate-600) |
-| `--color-text-muted` | `#94A3B8` | Micro-copy, metadata badges (slate-400) |
-| `--color-primary` | `#0D9488` | Active brand teal (teal-600) |
-| `--color-primary-hover` | `#0F766E` | Button hover (teal-700) |
-| `--color-accent` | `#EA580C` | Action highlight / CTA (orange-600) |
-| `--color-success` | `#059669` | Validated URLs, ready status (emerald-600) |
-| `--color-warning` | `#D97706` | Truncation, mock fallback indicator (amber-600) |
-| `--color-destructive` | `#DC2626` | SSRF violations, extraction errors (red-600) |
-| `--color-ring` | `#0D9488` | Keyboard focus ring |
+| `--color-canvas` | `#191B19` | Main application background (warm cocoa-charcoal) |
+| `--color-surface` | `#292D29` | Primary surfaces (cards, query desk, capture desk) |
+| `--color-surface-subtle` | `#202420` | Secondary surfaces (toolbars, inner containers, code blocks) |
+| `--color-surface-elevated`| `#343A34` | Elevated surfaces (modals, dropdowns, floating toasts, active tabs) |
+| `--color-border` | `#485148` | Crisp structural 1px borders |
+| `--color-border-hover` | `#5C665C` | Interactive hover borders |
+| `--color-border-subtle` | `#333933` | Divider lines and sub-borders |
+| `--color-text-primary` | `#F1F0EA` | Primary high-contrast warm ivory text (WCAG AAA on dark) |
+| `--color-text-secondary` | `#B8C0B6` | Secondary muted eucalyptus-sage text |
+| `--color-text-muted` | `#849082` | Micro-copy, metadata, labels |
+| `--color-accent` | `#A8C8B5` | Primary eucalyptus-green accent |
+| `--color-accent-hover` | `#C0DACB` | Accent hover state |
+| `--color-accent-subtle` | `#252E27` | Subtle eucalyptus tint for active badges and pills |
+| `--color-cocoa` | `#D4A373` | Warm cocoa tint for notes |
+| `--color-cocoa-subtle` | `#2D2319` | Subtle cocoa background for note badges |
+| `--color-success` | `#4ADE80` | Validated URLs, ready indexing status (emerald) |
+| `--color-success-subtle` | `#1C2E22` | Emerald container background |
+| `--color-warning` | `#FBBF24` | Pending indexing status, truncation warnings (amber) |
+| `--color-warning-subtle` | `#332814` | Amber container background |
+| `--color-destructive` | `#FB7185` | Ingestion errors, SSRF blocks (rose) |
+| `--color-destructive-subtle`| `#33181D`| Rose container background |
+| `--color-ring` | `#A8C8B5` | Accessible keyboard focus ring |
 
-### Typography Scale
+#### Typography Scale
 
-- **Primary UI & Headings:** `Plus Jakarta Sans`, system-ui, -apple-system, sans-serif
-- **Technical Metadata & Code:** `JetBrains Mono`, monospace (used for URLs, chunk numbers, scores, timestamps)
+- **Primary UI & Headings:** Modern clean sans (`system-ui`, `-apple-system`, `BlinkMacSystemFont`, `Plus Jakarta Sans`, `sans-serif`)
+- **Technical Metadata & Code:** Geometric monospace (`ui-monospace`, `SFMono-Regular`, `Menlo`, `Consolas`, monospace) for chunk IDs, source tags `[S1]`, scores, timestamps, and model names.
 
 | Level | Size / Line Height | Weight | Tracking | Usage |
 | :--- | :--- | :--- | :--- | :--- |
-| **H1** | 24px / 32px (`1.5rem`) | SemiBold (600) | `-0.02em` | Workspace header |
-| **H2** | 18px / 26px (`1.125rem`) | SemiBold (600) | `-0.01em` | Section headers (Ingest, Query) |
-| **H3** | 14px / 20px (`0.875rem`) | Medium (500) | `0` | Knowledge card title |
+| **H1** | 24px / 32px (`1.5rem`) | SemiBold (600) | `-0.02em` | Main headings |
+| **H2** | 16px / 24px (`1rem`) | SemiBold (600) | `-0.01em` | Section headers (Capture, Library, Query) |
+| **H3** | 14px / 20px (`0.875rem`) | Medium (500) | `0` | Item card title, answer title |
 | **Body** | 14px / 22px (`0.875rem`) | Regular (400) | `0` | Notes, answers, inputs |
 | **Caption** | 12px / 16px (`0.75rem`) | Regular (400) | `0` | Field labels, helper text |
-| **Mono Meta** | 11px / 14px (`0.6875rem`) | Medium (500) | `0.02em` | Chunk IDs, scores, timestamps |
+| **Mono Meta** | 11px / 14px (`0.6875rem`) | Medium (500) | `0.02em` | Chunk IDs, scores, timestamps, badges |
 
 ### Spacing Scale
 

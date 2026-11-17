@@ -1,4 +1,4 @@
-import { HealthStatus, SavedItem, QueryResult, IngestResponse, ListItemsResult } from '../types';
+import { HealthStatus, SavedItem, ItemDetail, QueryResult, IngestResponse, ListItemsResult } from '../types';
 
 export class ApiError extends Error {
   public readonly code: string;
@@ -129,6 +129,10 @@ export const api = {
       limit: (raw.meta?.limit as number) ?? limit,
       offset: (raw.meta?.offset as number) ?? offset,
     };
+  },
+
+  getItem(id: string, signal?: AbortSignal): Promise<ItemDetail> {
+    return request<ItemDetail>(`/items/${encodeURIComponent(id)}`, { signal });
   },
 
   ingest(

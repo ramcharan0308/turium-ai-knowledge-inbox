@@ -58,8 +58,8 @@ export function AnswerCard({
               aria-label={`Inspect citation [${sourceId}] from "${citation.itemTitle}"`}
               className={`citation-pill inline-flex items-center px-1.5 py-0.5 mx-1 my-0.5 rounded text-[11px] font-mono font-bold cursor-pointer transition-all ${
                 isSelected
-                  ? 'bg-teal-700 text-white ring-2 ring-teal-500 shadow-xs'
-                  : 'bg-teal-50 text-teal-800 border border-teal-200 hover:bg-teal-100'
+                  ? 'bg-[#A8C8B5] text-[#191B19] ring-2 ring-[#A8C8B5]/50 shadow-xs'
+                  : 'bg-[#252E27] text-[#A8C8B5] border border-[#3E4D42] hover:bg-[#2E3B32]'
               }`}
             >
               [{sourceId}]
@@ -69,7 +69,7 @@ export function AnswerCard({
 
         // If not in citation list, render safe plain text
         return (
-          <span key={index} className="text-stone-500 font-mono text-xs">
+          <span key={index} className="text-[#849082] font-mono text-xs">
             {part}
           </span>
         );
@@ -83,47 +83,47 @@ export function AnswerCard({
   return (
     <div
       aria-live="polite"
-      className="bg-white border border-stone-200 rounded-2xl p-5 shadow-xs space-y-4"
+      className="bg-[#292D29] border border-[#485148] rounded-2xl p-5 shadow-xs space-y-4"
     >
       {/* Answer Header */}
-      <div className="flex items-center justify-between border-b border-stone-100 pb-3">
+      <div className="flex items-center justify-between border-b border-[#384038] pb-3">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-teal-50 border border-teal-100 flex items-center justify-center text-teal-700">
+          <div className="w-7 h-7 rounded-lg bg-[#252E27] border border-[#3E4D42] flex items-center justify-center text-[#A8C8B5]">
             <Sparkles className="w-3.5 h-3.5" />
           </div>
           <div>
-            <h3 className="text-xs font-semibold text-stone-900 tracking-tight">Grounded RAG Answer</h3>
-            <span className="text-[11px] font-mono text-stone-400">
+            <h3 className="text-xs font-semibold text-[#F1F0EA] tracking-tight">Grounded RAG Answer</h3>
+            <span className="text-[11px] font-mono text-[#849082]">
               {result.mode === 'live' ? 'Groq LPU LLM + Gemini Embeddings' : 'Deterministic Extractive Synthesizer'}
             </span>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
-          <Badge variant={result.mode === 'live' ? 'teal' : 'amber'} size="xs">
+          <Badge variant={result.mode === 'live' ? 'eucalyptus' : 'amber'} size="xs">
             {result.mode === 'live' ? 'Live AI' : 'Demo AI'}
           </Badge>
 
           <button
             type="button"
             onClick={handleCopy}
-            className="p-1.5 text-stone-400 hover:text-stone-700 rounded-lg hover:bg-stone-100 transition-colors"
+            className="p-1.5 text-[#849082] hover:text-[#F1F0EA] rounded-lg hover:bg-[#343A34] transition-colors cursor-pointer"
             title="Copy answer text"
             aria-label="Copy answer to clipboard"
           >
-            {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+            {copied ? <Check className="w-3.5 h-3.5 text-[#4ADE80]" /> : <Copy className="w-3.5 h-3.5" />}
           </button>
         </div>
       </div>
 
       {/* Strict Refusal Notice (Anti-Hallucination Guardrail) */}
       {isRefusal ? (
-        <div className="p-3.5 rounded-xl bg-amber-50/70 border border-amber-200 text-xs text-amber-900 space-y-1.5">
-          <div className="flex items-center gap-1.5 font-semibold text-amber-950">
-            <ShieldCheck className="w-4 h-4 text-amber-700 shrink-0" />
+        <div className="p-3.5 rounded-xl bg-[#332814] border border-[#54411C] text-xs text-[#FBBF24] space-y-1.5">
+          <div className="flex items-center gap-1.5 font-semibold text-[#FBBF24]">
+            <ShieldCheck className="w-4 h-4 text-[#FBBF24] shrink-0" />
             <span>Anti-Hallucination Guardrail Triggered</span>
           </div>
-          <p className="text-stone-600 leading-relaxed font-mono text-[11px]">
+          <p className="text-[#E5D5BA] leading-relaxed font-mono text-[11px]">
             The model evaluated your saved documents and determined there is insufficient factual evidence to answer
             this question. To prevent fabricated claims, no ungrounded citations or speculative statements were generated.
           </p>
@@ -131,14 +131,14 @@ export function AnswerCard({
       ) : null}
 
       {/* Answer Body */}
-      <div className="text-sm text-stone-800 leading-relaxed whitespace-pre-wrap font-normal">
+      <div className="text-sm text-[#F1F0EA] leading-relaxed whitespace-pre-wrap font-normal">
         {renderFormattedAnswer(result.answer)}
       </div>
 
       {/* Available Citations Pill Bar */}
       {result.citations.length > 0 && (
-        <div className="pt-3 border-t border-stone-100 flex flex-wrap items-center gap-2 text-xs">
-          <span className="text-[11px] font-mono text-stone-400 uppercase tracking-wider font-semibold">
+        <div className="pt-3 border-t border-[#384038] flex flex-wrap items-center gap-2 text-xs">
+          <span className="text-[11px] font-mono text-[#849082] uppercase tracking-wider font-semibold">
             Sources Cited:
           </span>
           {result.citations.map((c) => {
@@ -150,8 +150,8 @@ export function AnswerCard({
                 onClick={() => onSelectCitation(c)}
                 className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-mono transition-all cursor-pointer ${
                   isSelected
-                    ? 'bg-teal-700 text-white shadow-2xs font-bold'
-                    : 'bg-stone-100 text-stone-700 hover:bg-stone-200 border border-stone-200/80'
+                    ? 'bg-[#A8C8B5] text-[#191B19] shadow-2xs font-bold'
+                    : 'bg-[#202420] text-[#B8C0B6] hover:text-[#F1F0EA] hover:bg-[#343A34] border border-[#485148]'
                 }`}
               >
                 <span>[{c.sourceId}]</span>
@@ -165,8 +165,8 @@ export function AnswerCard({
 
       {/* Refusal with empty citations advice */}
       {isRefusal && result.citations.length === 0 && (
-        <div className="pt-2 text-[11px] text-stone-400 font-mono flex items-center gap-1">
-          <AlertCircle className="w-3.5 h-3.5 text-stone-400" />
+        <div className="pt-2 text-[11px] text-[#849082] font-mono flex items-center gap-1">
+          <AlertCircle className="w-3.5 h-3.5 text-[#849082]" />
           <span>Tip: Ingest notes or articles mentioning the subject to allow the inbox to ground its answer.</span>
         </div>
       )}

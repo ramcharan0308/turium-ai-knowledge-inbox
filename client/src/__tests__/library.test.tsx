@@ -1,6 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { KnowledgeLibrary } from '../components/library/KnowledgeLibrary';
+import { ItemDetailModal } from '../components/library/ItemDetailModal';
+import { api } from '../api/client';
 import { SavedItem } from '../types';
 
 describe('KnowledgeLibrary Filtering and Search', () => {
@@ -149,5 +151,62 @@ describe('KnowledgeLibrary Filtering and Search', () => {
 
     expect(screen.getByText('SQLite Database Optimization')).toBeDefined();
     expect(screen.getByText('Vector Search Best Practices')).toBeDefined();
+  });
+});
+
+describe('ItemDetailModal Inspection & Fetching', () => {
+  const testItem: SavedItem = {
+    id: 'itm_modal_test',
+    type: 'note',
+    title: 'Detailed Inspection Document',
+    sourceUrl: null,
+    snippet: 'This is the truncated preview snippet...',
+    chunkCount: 2,
+    createdAt: '2026-11-17T12:00:00.000Z',
+    updatedAt: '2026-11-17T12:00:00.000Z',
+    indexingStatus: 'ready',
+  };
+
+  it('renders modal with initial metadata and calls api.getItem', async () => {
+    const getItemSpy = vi.spyOn(api, 'getItem').mockResolvedValue({
+      id: 'itm_modal_test',
+      type: 'note',
+      title: 'Detailed Inspection Document',
+      sourceUrl: null,
+      rawContent: 'This is the complete, unabridged note content fetched dynamically from GET /items/:id.',
+      chunkCount: 2,
+      createdAt: '2026-11-17T12:00:00.000Z',
+      updatedAt: '2026-11-17T12:00:00.000Z',
+      indexingStatus: 'ready',
+    });
+
+    const onClose = vi.fn();
+    render(<ItemDetailModal item={testItem} onClose={onClose} />);
+
+    expect(screen.getByText('Detailed Inspection Document')).toBeDefined();
+    expect(screen.getByText('ID: itm_modal_test')).toBeDefined();
+    expect(getItemSpy).toHaveBeenCalledWith('itm_modal_test', expect.any(AbortSignal));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText('This is the complete, unabridged note content fetched dynamically from GET /items/:id.')
+      ).toBeDefined();
+    });
+
+    getItemSpy.mockRestore();
+  });
+
+  it('falls back to snippet preview when api.getItem encounters an error', async () => {
+    const getItemSpy = vi.spyOn(api, 'getItem').mockRejectedValue(new Error('Network timeout'));
+
+    const onClose = vi.fn();
+    render(<ItemDetailModal item={testItem} onClose={onClose} />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/showing preview snippet/i)).toBeDefined();
+      expect(screen.getByText('This is the truncated preview snippet...')).toBeDefined();
+    });
+
+    getItemSpy.mockRestore();
   });
 });

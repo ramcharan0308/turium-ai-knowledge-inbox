@@ -213,6 +213,52 @@ describe('Ingestion and Items API', () => {
     assert.ok(firstItem.chunkCount >= 1);
     assert.equal(firstItem.indexingStatus, 'ready');
   });
+
+  test('GET /items/:id returns 200 with complete rawContent and item details', async () => {
+    // Ingest a distinctive item first
+    const ingestRes = await fetch(`${baseUrl}/ingest`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'note',
+        title: 'Full Raw Content Verification Note',
+        content: 'This is the complete, unabridged note content that must be returned by the GET /items/:id endpoint for inspection without truncation.',
+      }),
+    });
+
+    assert.equal(ingestRes.status, 201);
+    const ingestJson = await ingestRes.json();
+    const itemId = ingestJson.data.id;
+
+    // Fetch full item detail
+    const detailRes = await fetch(`${baseUrl}/items/${itemId}`);
+    assert.equal(detailRes.status, 200);
+
+    const detailJson = await detailRes.json();
+    assert.equal(detailJson.success, true);
+    assert.equal(detailJson.data.id, itemId);
+    assert.equal(detailJson.data.title, 'Full Raw Content Verification Note');
+    assert.equal(
+      detailJson.data.rawContent,
+      'This is the complete, unabridged note content that must be returned by the GET /items/:id endpoint for inspection without truncation.'
+    );
+    assert.equal(detailJson.data.type, 'note');
+    assert.equal(detailJson.data.indexingStatus, 'ready');
+    assert.ok(detailJson.data.chunkCount >= 1);
+    // Ensure embeddings are NOT leaked in item detail
+    assert.equal((detailJson.data as Record<string, unknown>).embedding, undefined);
+    assert.equal((detailJson.data as Record<string, unknown>).chunks, undefined);
+  });
+
+  test('GET /items/:id returns 404 NOT_FOUND for non-existent item id', async () => {
+    const res = await fetch(`${baseUrl}/items/itm_nonexistent_99999`);
+    assert.equal(res.status, 404);
+
+    const json = await res.json();
+    assert.equal(json.success, false);
+    assert.equal(json.error.code, 'NOT_FOUND');
+    assert.ok(json.error.message.includes('itm_nonexistent_99999'));
+  });
 });
 
 describe('ScraperService Unit and SSRF Edge Cases', () => {

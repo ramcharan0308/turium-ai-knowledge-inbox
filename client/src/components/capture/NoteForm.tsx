@@ -109,14 +109,14 @@ export function NoteForm({
       />
 
       <div className="flex justify-between items-center pt-1">
-        <span className="text-[11px] text-stone-400 font-mono flex items-center gap-1">
-          <FileText className="w-3 h-3 text-stone-400" />
-          <span>Deterministic 500-char chunking</span>
+        <span className="text-[11px] text-[#849082] font-mono flex items-center gap-1.5">
+          <FileText className="w-3.5 h-3.5 text-[#D4A373]" />
+          <span>Deterministic 600-char chunking</span>
         </span>
 
         <Button
           type="submit"
-          variant="terracotta"
+          variant="cocoa"
           size="sm"
           loading={isSubmitting}
           loadingText="Ingesting..."

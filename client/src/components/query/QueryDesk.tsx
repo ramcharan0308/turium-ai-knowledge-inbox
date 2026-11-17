@@ -84,30 +84,30 @@ export function QueryDesk({ items }: QueryDeskProps) {
   ];
 
   return (
-    <section className="bg-white border border-stone-200 rounded-2xl shadow-xs overflow-hidden flex flex-col space-y-4 p-5">
+    <section className="bg-[#292D29] border border-[#485148] rounded-2xl shadow-xs overflow-hidden flex flex-col space-y-4 p-5">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-stone-200/80 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#384038] pb-4">
         <div>
-          <h2 className="text-sm font-semibold text-stone-900 tracking-tight flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-teal-700" />
+          <h2 className="text-sm font-semibold text-[#F1F0EA] tracking-tight flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-[#A8C8B5]" />
             Ask Your Knowledge
           </h2>
-          <p className="text-xs text-stone-500">
+          <p className="text-xs text-[#B8C0B6]">
             Natural-language semantic retrieval backed by citations and strict anti-hallucination
           </p>
         </div>
 
         {/* Top-K Selector */}
         <div className="flex items-center gap-2 self-start sm:self-auto text-xs font-mono">
-          <label htmlFor="topK-select" className="text-stone-400 flex items-center gap-1">
-            <SlidersHorizontal className="w-3 h-3 text-stone-400" />
+          <label htmlFor="topK-select" className="text-[#849082] flex items-center gap-1">
+            <SlidersHorizontal className="w-3.5 h-3.5 text-[#849082]" />
             <span>Top-K:</span>
           </label>
           <select
             id="topK-select"
             value={topK}
             onChange={(e) => setTopK(parseInt(e.target.value, 10))}
-            className="px-2 py-1 rounded-md border border-stone-300 text-stone-800 bg-stone-50 focus:outline-hidden focus:ring-1 focus:ring-teal-600 cursor-pointer"
+            className="px-2 py-1 rounded-md border border-[#485148] text-[#F1F0EA] bg-[#202420] focus:outline-hidden focus:ring-1 focus:ring-[#A8C8B5] focus:border-[#A8C8B5] cursor-pointer"
           >
             <option value={2}>2 chunks</option>
             <option value={4}>4 chunks (recommended)</option>
@@ -130,15 +130,15 @@ export function QueryDesk({ items }: QueryDeskProps) {
             onKeyDown={handleKeyDown}
             placeholder="Ask a question about your saved notes and web articles (e.g. 'What is the storage mechanism?')..."
             disabled={loading}
-            className={`w-full p-3 pr-10 text-xs sm:text-sm bg-stone-50/50 border rounded-xl placeholder:text-stone-400 text-stone-900 focus:outline-hidden focus:ring-2 focus:ring-teal-600/20 focus:border-teal-700 focus:bg-white transition-colors resize-none ${
-              error ? 'border-rose-300' : 'border-stone-300'
+            className={`w-full p-3 pr-10 text-xs sm:text-sm bg-[#202420] border rounded-xl placeholder:text-[#849082] text-[#F1F0EA] focus:outline-hidden focus:ring-2 focus:ring-[#A8C8B5]/25 focus:border-[#A8C8B5] focus:bg-[#252A25] transition-colors resize-none ${
+              error ? 'border-[#FB7185]' : 'border-[#485148]'
             }`}
           />
           {question && (
             <button
               type="button"
               onClick={handleClear}
-              className="absolute right-3 top-3 text-stone-400 hover:text-stone-600 p-1"
+              className="absolute right-3 top-3 text-[#849082] hover:text-[#F1F0EA] p-1 cursor-pointer"
               aria-label="Clear question"
             >
               <X className="w-4 h-4" />
@@ -148,8 +148,8 @@ export function QueryDesk({ items }: QueryDeskProps) {
 
         {/* Action Controls & Hint */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="text-[11px] font-mono text-stone-400 flex items-center gap-1.5">
-            <HelpCircle className="w-3.5 h-3.5 text-stone-400 shrink-0" />
+          <div className="text-[11px] font-mono text-[#849082] flex items-center gap-1.5">
+            <HelpCircle className="w-3.5 h-3.5 text-[#849082] shrink-0" />
             <span>Press Enter to ask, Shift+Enter for newline</span>
           </div>
 
@@ -175,8 +175,8 @@ export function QueryDesk({ items }: QueryDeskProps) {
 
         {/* Quick Sample Prompts */}
         {!queryResult && !loading && (
-          <div className="pt-2 border-t border-stone-100 space-y-1.5">
-            <div className="text-[11px] font-mono uppercase tracking-wider text-stone-400">
+          <div className="pt-2 border-t border-[#384038] space-y-1.5">
+            <div className="text-[11px] font-mono uppercase tracking-wider text-[#849082]">
               Suggested questions:
             </div>
             <div className="flex flex-wrap gap-1.5">
@@ -185,7 +185,7 @@ export function QueryDesk({ items }: QueryDeskProps) {
                   key={i}
                   type="button"
                   onClick={() => handleSampleClick(prompt)}
-                  className="text-left text-xs font-mono text-stone-600 bg-stone-50 hover:bg-stone-100 hover:text-stone-900 border border-stone-200 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
+                  className="text-left text-xs font-mono text-[#B8C0B6] bg-[#202420] hover:bg-[#343A34] hover:text-[#F1F0EA] border border-[#485148] px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
                 >
                   &ldquo;{prompt}&rdquo;
                 </button>
@@ -197,8 +197,8 @@ export function QueryDesk({ items }: QueryDeskProps) {
 
       {/* Query Error Notice */}
       {error && (
-        <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-800 flex items-start gap-2">
-          <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+        <div className="p-3.5 rounded-xl bg-[#2D1D20] border border-[#54222B] text-xs text-[#FB7185] flex items-start gap-2">
+          <AlertCircle className="w-4 h-4 text-[#FB7185] shrink-0 mt-0.5" />
           <div className="space-y-0.5">
             <div className="font-semibold">Unable to process query</div>
             <div className="font-mono text-[11px]">{error}</div>
@@ -226,7 +226,7 @@ export function QueryDesk({ items }: QueryDeskProps) {
 
       {/* Hint when Inbox is empty */}
       {items.length === 0 && !queryResult && (
-        <div className="p-3 rounded-xl bg-stone-50 border border-dashed border-stone-200 text-center text-xs text-stone-500 font-mono">
+        <div className="p-3 rounded-xl bg-[#202420] border border-dashed border-[#485148] text-center text-xs text-[#B8C0B6] font-mono">
           Save some notes or URLs on the left rail first to enable grounded vector search.
         </div>
       )}

@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { X, Copy, Check, ExternalLink, Calendar, Layers } from 'lucide-react';
+import { X, Copy, Check, ExternalLink, Calendar, Layers, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { SavedItem } from '../../types';
+import { SavedItem, ItemDetail } from '../../types';
+import { api } from '../../api/client';
 import { SourceTypeBadge, StatusBadge } from '../common/Badge';
 
 interface ItemDetailModalProps {
@@ -11,6 +12,9 @@ interface ItemDetailModalProps {
 
 export function ItemDetailModal({ item, onClose }: ItemDetailModalProps) {
   const [copied, setCopied] = useState(false);
+  const [fullItem, setFullItem] = useState<ItemDetail | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -28,16 +32,52 @@ export function ItemDetailModal({ item, onClose }: ItemDetailModalProps) {
     };
   }, [item, onClose]);
 
+  // Fetch complete raw content on item selection
+  useEffect(() => {
+    if (!item) {
+      setFullItem(null);
+      setIsLoading(false);
+      setLoadError(null);
+      return;
+    }
+
+    const controller = new AbortController();
+    setIsLoading(true);
+    setLoadError(null);
+
+    api
+      .getItem(item.id, controller.signal)
+      .then((detail) => {
+        setFullItem(detail);
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        if (!controller.signal.aborted) {
+          setLoadError(err instanceof Error ? err.message : 'Failed to fetch complete document content');
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      controller.abort();
+    };
+  }, [item]);
+
+  const displayContent = fullItem?.rawContent || item?.rawContent || item?.snippet || '';
+
   const handleCopy = async () => {
-    if (!item) return;
+    if (!displayContent) return;
     try {
-      await navigator.clipboard.writeText(item.rawContent || item.snippet);
+      await navigator.clipboard.writeText(displayContent);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // ignore
+      // ignore clipboard write failure
     }
   };
+
+  const chunkCount = fullItem?.chunkCount ?? item?.chunkCount ?? 0;
+  const sourceUrl = fullItem?.sourceUrl ?? item?.sourceUrl;
 
   return (
     <AnimatePresence>
@@ -49,7 +89,7 @@ export function ItemDetailModal({ item, onClose }: ItemDetailModalProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="absolute inset-0 bg-stone-900/40 backdrop-blur-xs"
+            className="absolute inset-0 bg-black/65 backdrop-blur-xs"
           />
 
           {/* Modal Container */}
@@ -61,24 +101,24 @@ export function ItemDetailModal({ item, onClose }: ItemDetailModalProps) {
             role="dialog"
             aria-modal="true"
             aria-labelledby="item-detail-title"
-            className="relative bg-white border border-stone-200 rounded-2xl shadow-xl max-w-2xl w-full overflow-hidden z-10 flex flex-col max-h-[85vh]"
+            className="relative bg-[#292D29] border border-[#485148] rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden z-10 flex flex-col max-h-[85vh]"
           >
             {/* Header */}
-            <div className="px-6 py-4 border-b border-stone-200 bg-stone-50/50 flex items-start justify-between gap-4">
+            <div className="px-6 py-4 border-b border-[#485148] bg-[#202420] flex items-start justify-between gap-4">
               <div className="space-y-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <SourceTypeBadge type={item.type} size="xs" />
                   <StatusBadge status={item.indexingStatus} size="xs" />
-                  <span className="text-[11px] font-mono text-stone-400">ID: {item.id}</span>
+                  <span className="text-[11px] font-mono text-[#849082]">ID: {item.id}</span>
                 </div>
-                <h2 id="item-detail-title" className="text-base font-semibold text-stone-900 leading-snug break-words">
+                <h2 id="item-detail-title" className="text-base font-semibold text-[#F1F0EA] leading-snug break-words">
                   {item.title}
                 </h2>
               </div>
               <button
                 type="button"
                 onClick={onClose}
-                className="p-1.5 text-stone-400 hover:text-stone-700 rounded-lg hover:bg-stone-100 transition-colors shrink-0"
+                className="p-1.5 text-[#849082] hover:text-[#F1F0EA] rounded-lg hover:bg-[#343A34] transition-colors shrink-0"
                 aria-label="Close document inspection dialog"
               >
                 <X className="w-4 h-4" />
@@ -86,24 +126,24 @@ export function ItemDetailModal({ item, onClose }: ItemDetailModalProps) {
             </div>
 
             {/* Metadata Bar */}
-            <div className="px-6 py-2.5 bg-stone-50 border-b border-stone-200/80 flex flex-wrap items-center gap-4 text-xs font-mono text-stone-500">
+            <div className="px-6 py-2.5 bg-[#202420] border-b border-[#384038] flex flex-wrap items-center gap-4 text-xs font-mono text-[#B8C0B6]">
               <div className="flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5 text-stone-400" />
+                <Calendar className="w-3.5 h-3.5 text-[#849082]" />
                 <span>Saved: {new Date(item.createdAt).toLocaleString()}</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <Layers className="w-3.5 h-3.5 text-stone-400" />
-                <span>{item.chunkCount} vector {item.chunkCount === 1 ? 'chunk' : 'chunks'}</span>
+                <Layers className="w-3.5 h-3.5 text-[#849082]" />
+                <span>{chunkCount} vector {chunkCount === 1 ? 'chunk' : 'chunks'}</span>
               </div>
-              {item.sourceUrl && (
+              {sourceUrl && (
                 <a
-                  href={item.sourceUrl}
+                  href={sourceUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-teal-700 hover:text-teal-800 hover:underline truncate max-w-xs"
+                  className="flex items-center gap-1 text-[#A8C8B5] hover:text-[#C0DACB] hover:underline truncate max-w-xs"
                 >
                   <ExternalLink className="w-3.5 h-3.5 shrink-0" />
-                  <span className="truncate">{item.sourceUrl}</span>
+                  <span className="truncate">{sourceUrl}</span>
                 </a>
               )}
             </div>
@@ -111,34 +151,48 @@ export function ItemDetailModal({ item, onClose }: ItemDetailModalProps) {
             {/* Content Body */}
             <div className="p-6 overflow-y-auto flex-1 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-mono font-semibold uppercase tracking-wider text-stone-400">
-                  Document Content
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-mono font-semibold uppercase tracking-wider text-[#849082]">
+                    Document Content
+                  </span>
+                  {isLoading && (
+                    <span className="inline-flex items-center gap-1 text-[11px] font-mono text-[#A8C8B5]">
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                      Loading raw content...
+                    </span>
+                  )}
+                </div>
                 <button
                   type="button"
                   onClick={handleCopy}
-                  className="inline-flex items-center gap-1 text-xs text-stone-500 hover:text-stone-800 px-2 py-1 rounded-md border border-stone-200 hover:bg-stone-50 transition-colors"
+                  className="inline-flex items-center gap-1.5 text-xs text-[#B8C0B6] hover:text-[#F1F0EA] px-2.5 py-1 rounded-lg border border-[#485148] bg-[#202420] hover:bg-[#343A34] transition-colors cursor-pointer"
                 >
                   {copied ? (
                     <>
-                      <Check className="w-3 h-3 text-emerald-600" />
-                      <span className="text-emerald-700 font-medium">Copied!</span>
+                      <Check className="w-3 h-3 text-[#4ADE80]" />
+                      <span className="text-[#4ADE80] font-medium">Copied!</span>
                     </>
                   ) : (
                     <>
-                      <Copy className="w-3 h-3" />
+                      <Copy className="w-3 h-3 text-[#849082]" />
                       <span>Copy Text</span>
                     </>
                   )}
                 </button>
               </div>
 
-              <div className="p-4 rounded-xl border border-stone-200 bg-stone-50/50 text-xs font-mono text-stone-800 leading-relaxed whitespace-pre-wrap break-words max-h-96 overflow-y-auto">
-                {item.rawContent || item.snippet}
+              {loadError && (
+                <div className="p-2.5 rounded-lg bg-[#2D1D20] border border-[#54222B] text-xs text-[#FB7185]">
+                  Showing preview snippet. Could not fetch complete document text ({loadError}).
+                </div>
+              )}
+
+              <div className="p-4 rounded-xl border border-[#485148] bg-[#202420] text-xs font-mono text-[#F1F0EA] leading-relaxed whitespace-pre-wrap break-words max-h-96 overflow-y-auto">
+                {displayContent}
               </div>
 
               {item.indexingError && (
-                <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-800">
+                <div className="p-3 rounded-xl bg-[#2D1D20] border border-[#54222B] text-xs text-[#FB7185]">
                   <div className="font-semibold mb-0.5">Indexing Failure Details:</div>
                   <div className="font-mono text-[11px]">{item.indexingError}</div>
                 </div>
@@ -146,11 +200,11 @@ export function ItemDetailModal({ item, onClose }: ItemDetailModalProps) {
             </div>
 
             {/* Footer */}
-            <div className="px-6 py-3 border-t border-stone-200 bg-stone-50/40 flex justify-end">
+            <div className="px-6 py-3 border-t border-[#485148] bg-[#202420] flex justify-end">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-1.5 text-xs font-medium text-stone-700 bg-white border border-stone-300 rounded-lg hover:bg-stone-50 transition-colors"
+                className="px-4 py-1.5 text-xs font-medium text-[#F1F0EA] bg-[#292D29] border border-[#485148] rounded-lg hover:bg-[#343A34] transition-colors cursor-pointer"
               >
                 Close
               </button>

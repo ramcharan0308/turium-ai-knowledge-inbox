@@ -102,7 +102,7 @@ export function UrlForm({
         }}
         disabled={isSubmitting}
         error={error}
-        leftIcon={<Globe className="w-4 h-4 text-stone-400" />}
+        leftIcon={<Globe className="w-4 h-4 text-[#849082]" />}
       />
 
       <Input
@@ -114,8 +114,8 @@ export function UrlForm({
         maxLength={200}
       />
 
-      <div className="p-2.5 rounded-lg bg-stone-50 border border-stone-200/80 text-[11px] text-stone-500 flex items-start gap-2">
-        <ShieldCheck className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
+      <div className="p-2.5 rounded-xl bg-[#202420] border border-[#485148] text-[11px] text-[#B8C0B6] flex items-start gap-2">
+        <ShieldCheck className="w-4 h-4 text-[#A8C8B5] shrink-0 mt-0.5" />
         <span className="leading-relaxed">
           Server-side scraper with connection-level SSRF safeguards. Private subnets, localhost, and cloud metadata
           endpoints are automatically rejected.

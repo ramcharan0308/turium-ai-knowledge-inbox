@@ -14,30 +14,30 @@ export function KnowledgeCapture({ onIngestSuccess }: KnowledgeCaptureProps) {
   const [progressMessage, setProgressMessage] = useState<string | null>(null);
 
   return (
-    <div className="bg-white border border-stone-200 rounded-2xl shadow-xs overflow-hidden">
+    <div className="bg-[#292D29] border border-[#485148] rounded-2xl shadow-xs overflow-hidden">
       {/* Capture Header & Tab Selector */}
-      <div className="px-5 py-4 border-b border-stone-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-stone-50/40">
+      <div className="px-5 py-4 border-b border-[#485148] flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#202420]">
         <div>
-          <h2 className="text-sm font-semibold text-stone-900 tracking-tight flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-teal-700" />
+          <h2 className="text-sm font-semibold text-[#F1F0EA] tracking-tight flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-[#A8C8B5]" />
             Knowledge Capture
           </h2>
-          <p className="text-xs text-stone-500">Save thoughts or scrape articles into the vector store</p>
+          <p className="text-xs text-[#B8C0B6]">Save thoughts or scrape articles into the vector store</p>
         </div>
 
         {/* Segmented Pill Switcher */}
-        <div className="inline-flex p-1 rounded-xl bg-stone-100 border border-stone-200/80 self-start sm:self-auto">
+        <div className="inline-flex p-1 rounded-xl bg-[#191B19] border border-[#485148] self-start sm:self-auto">
           <button
             type="button"
             onClick={() => setActiveTab('note')}
             disabled={isSubmitting}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
               activeTab === 'note'
-                ? 'bg-white text-stone-900 shadow-2xs font-semibold'
-                : 'text-stone-600 hover:text-stone-900'
+                ? 'bg-[#2D2319] text-[#D4A373] border border-[#4D3C2C] shadow-2xs font-semibold'
+                : 'text-[#B8C0B6] hover:text-[#F1F0EA] border border-transparent'
             }`}
           >
-            <FileText className={`w-3.5 h-3.5 ${activeTab === 'note' ? 'text-orange-700' : 'text-stone-400'}`} />
+            <FileText className={`w-3.5 h-3.5 ${activeTab === 'note' ? 'text-[#D4A373]' : 'text-[#849082]'}`} />
             <span>Plain Note</span>
           </button>
 
@@ -45,13 +45,13 @@ export function KnowledgeCapture({ onIngestSuccess }: KnowledgeCaptureProps) {
             type="button"
             onClick={() => setActiveTab('url')}
             disabled={isSubmitting}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
               activeTab === 'url'
-                ? 'bg-white text-stone-900 shadow-2xs font-semibold'
-                : 'text-stone-600 hover:text-stone-900'
+                ? 'bg-[#252E27] text-[#A8C8B5] border border-[#3E4D42] shadow-2xs font-semibold'
+                : 'text-[#B8C0B6] hover:text-[#F1F0EA] border border-transparent'
             }`}
           >
-            <Globe className={`w-3.5 h-3.5 ${activeTab === 'url' ? 'text-teal-700' : 'text-stone-400'}`} />
+            <Globe className={`w-3.5 h-3.5 ${activeTab === 'url' ? 'text-[#A8C8B5]' : 'text-[#849082]'}`} />
             <span>Web URL</span>
           </button>
         </div>
@@ -59,8 +59,8 @@ export function KnowledgeCapture({ onIngestSuccess }: KnowledgeCaptureProps) {
 
       {/* Progress Notification Banner */}
       {progressMessage && (
-        <div className="px-5 py-2.5 bg-teal-50/70 border-b border-teal-100 flex items-center gap-2 text-xs text-teal-800 font-mono animate-pulse">
-          <Loader2 className="w-3.5 h-3.5 animate-spin text-teal-700 shrink-0" />
+        <div className="px-5 py-2.5 bg-[#252E27] border-b border-[#3E4D42] flex items-center gap-2 text-xs text-[#A8C8B5] font-mono animate-pulse">
+          <Loader2 className="w-3.5 h-3.5 animate-spin text-[#A8C8B5] shrink-0" />
           <span>{progressMessage}</span>
         </div>
       )}

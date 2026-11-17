@@ -4,7 +4,7 @@ import { ItemType, IndexingStatus } from '../../types';
 
 interface BadgeProps {
   children?: React.ReactNode;
-  variant?: 'default' | 'outline' | 'teal' | 'terracotta' | 'emerald' | 'amber' | 'rose' | 'slate';
+  variant?: 'default' | 'outline' | 'eucalyptus' | 'cocoa' | 'emerald' | 'amber' | 'rose' | 'surface' | 'teal' | 'terracotta' | 'slate';
   size?: 'xs' | 'sm';
   className?: string;
   title?: string;
@@ -14,14 +14,18 @@ export function Badge({ children, variant = 'default', size = 'sm', className = 
   const sizeClasses = size === 'xs' ? 'px-1.5 py-0.5 text-[10px]' : 'px-2 py-0.5 text-xs';
 
   const variantClasses = {
-    default: 'bg-stone-100 text-stone-700 border-stone-200',
-    outline: 'bg-transparent text-stone-600 border-stone-300',
-    teal: 'bg-teal-50 text-teal-800 border-teal-200',
-    terracotta: 'bg-orange-50 text-orange-800 border-orange-200',
-    emerald: 'bg-emerald-50 text-emerald-800 border-emerald-200',
-    amber: 'bg-amber-50 text-amber-800 border-amber-200',
-    rose: 'bg-rose-50 text-rose-800 border-rose-200',
-    slate: 'bg-slate-100 text-slate-700 border-slate-200',
+    default: 'bg-[#202420] text-[#B8C0B6] border-[#485148]',
+    outline: 'bg-transparent text-[#B8C0B6] border-[#485148]',
+    surface: 'bg-[#292D29] text-[#F1F0EA] border-[#485148]',
+    eucalyptus: 'bg-[#252E27] text-[#A8C8B5] border-[#3E4D42]',
+    cocoa: 'bg-[#2D2319] text-[#D4A373] border-[#4D3C2C]',
+    emerald: 'bg-[#1C2E22] text-[#4ADE80] border-[#2A4B35]',
+    amber: 'bg-[#332814] text-[#FBBF24] border-[#54411C]',
+    rose: 'bg-[#33181D] text-[#FB7185] border-[#54222B]',
+    // Aliases for compatibility
+    teal: 'bg-[#252E27] text-[#A8C8B5] border-[#3E4D42]',
+    terracotta: 'bg-[#2D2319] text-[#D4A373] border-[#4D3C2C]',
+    slate: 'bg-[#202420] text-[#B8C0B6] border-[#485148]',
   }[variant];
 
   return (
@@ -37,7 +41,7 @@ export function Badge({ children, variant = 'default', size = 'sm', className = 
 export function SourceTypeBadge({ type, size = 'sm' }: { type: ItemType; size?: 'xs' | 'sm' }) {
   if (type === 'note') {
     return (
-      <Badge variant="terracotta" size={size} className="gap-1">
+      <Badge variant="cocoa" size={size} className="gap-1">
         <FileText className={size === 'xs' ? 'w-2.5 h-2.5' : 'w-3 h-3'} />
         <span>NOTE</span>
       </Badge>
@@ -45,7 +49,7 @@ export function SourceTypeBadge({ type, size = 'sm' }: { type: ItemType; size?: 
   }
 
   return (
-    <Badge variant="slate" size={size} className="gap-1">
+    <Badge variant="eucalyptus" size={size} className="gap-1">
       <Globe className={size === 'xs' ? 'w-2.5 h-2.5' : 'w-3 h-3'} />
       <span>URL</span>
     </Badge>
@@ -66,7 +70,7 @@ export function StatusBadge({
   if (status === 'ready') {
     return (
       <Badge variant="emerald" size={size} className="gap-1" title={title || 'Indexed and searchable'}>
-        <CheckCircle2 className={`${iconClass} text-emerald-600`} />
+        <CheckCircle2 className={`${iconClass} text-[#4ADE80]`} />
         <span>Ready</span>
       </Badge>
     );
@@ -75,7 +79,7 @@ export function StatusBadge({
   if (status === 'pending') {
     return (
       <Badge variant="amber" size={size} className="gap-1" title={title || 'Generating vector embeddings...'}>
-        <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+        <span className="w-1.5 h-1.5 rounded-full bg-[#FBBF24] animate-pulse" />
         <span>Indexing...</span>
       </Badge>
     );
@@ -83,7 +87,7 @@ export function StatusBadge({
 
   return (
     <Badge variant="rose" size={size} className="gap-1" title={title || 'Indexing failed'}>
-      <AlertCircle className={`${iconClass} text-rose-600`} />
+      <AlertCircle className={`${iconClass} text-[#FB7185]`} />
       <span>Failed</span>
     </Badge>
   );

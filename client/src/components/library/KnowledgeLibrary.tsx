@@ -69,15 +69,15 @@ export function KnowledgeLibrary({
   };
 
   return (
-    <section className="bg-white border border-stone-200 rounded-2xl shadow-xs overflow-hidden flex flex-col">
+    <section className="bg-[#292D29] border border-[#485148] rounded-2xl shadow-xs overflow-hidden flex flex-col">
       {/* Library Top Header */}
-      <div className="px-5 py-4 border-b border-stone-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-stone-50/40">
+      <div className="px-5 py-4 border-b border-[#485148] flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#202420]">
         <div>
-          <h2 className="text-sm font-semibold text-stone-900 tracking-tight flex items-center gap-2">
-            <BookOpen className="w-4 h-4 text-teal-700" />
+          <h2 className="text-sm font-semibold text-[#F1F0EA] tracking-tight flex items-center gap-2">
+            <BookOpen className="w-4 h-4 text-[#A8C8B5]" />
             Knowledge Library
           </h2>
-          <p className="text-xs text-stone-500 font-mono">
+          <p className="text-xs text-[#B8C0B6] font-mono">
             {total} {total === 1 ? 'item' : 'items'} stored in SQLite vector store
           </p>
         </div>
@@ -87,31 +87,31 @@ export function KnowledgeLibrary({
           type="button"
           onClick={onRefresh}
           disabled={loading}
-          className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-mono text-stone-600 hover:text-stone-900 bg-white border border-stone-200 rounded-lg hover:bg-stone-50 transition-colors self-start sm:self-auto cursor-pointer disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-mono text-[#B8C0B6] hover:text-[#F1F0EA] bg-[#292D29] border border-[#485148] rounded-lg hover:bg-[#343A34] transition-colors self-start sm:self-auto cursor-pointer disabled:opacity-40"
           title="Refresh saved items list"
         >
-          <RotateCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-teal-700' : 'text-stone-500'}`} />
+          <RotateCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-[#A8C8B5]' : 'text-[#849082]'}`} />
           <span>Refresh</span>
         </button>
       </div>
 
       {/* Search & Filter Toolbar */}
-      <div className="p-4 border-b border-stone-200/60 bg-white space-y-3">
+      <div className="p-4 border-b border-[#384038] bg-[#292D29] space-y-3">
         {/* Search Input */}
         <div className="relative">
-          <Search className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <Search className="w-4 h-4 text-[#849082] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
             placeholder="Search saved titles, notes, or URLs..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-8 py-2 text-xs bg-stone-50/60 border border-stone-300 rounded-lg text-stone-900 placeholder:text-stone-400 focus:outline-hidden focus:ring-2 focus:ring-teal-600/20 focus:border-teal-700 focus:bg-white transition-colors"
+            className="w-full pl-9 pr-8 py-2 text-xs bg-[#202420] border border-[#485148] rounded-lg text-[#F1F0EA] placeholder:text-[#849082] focus:outline-hidden focus:ring-2 focus:ring-[#A8C8B5]/25 focus:border-[#A8C8B5] focus:bg-[#252A25] transition-colors"
           />
           {searchQuery && (
             <button
               type="button"
               onClick={() => setSearchQuery('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 p-0.5"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#849082] hover:text-[#F1F0EA] p-0.5 cursor-pointer"
               aria-label="Clear search input"
             >
               <X className="w-3.5 h-3.5" />
@@ -123,16 +123,16 @@ export function KnowledgeLibrary({
         <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-xs font-mono">
           {/* Source Type Pills */}
           <div className="flex items-center gap-1">
-            <span className="text-stone-400 mr-1 text-[11px] uppercase">Type:</span>
+            <span className="text-[#849082] mr-1 text-[11px] uppercase">Type:</span>
             {(['all', 'note', 'url'] as const).map((t) => (
               <button
                 key={t}
                 type="button"
                 onClick={() => setTypeFilter(t)}
-                className={`px-2 py-0.5 rounded-md text-[11px] transition-colors cursor-pointer ${
+                className={`px-2 py-0.5 rounded-md text-[11px] transition-colors cursor-pointer border ${
                   typeFilter === t
-                    ? 'bg-stone-800 text-white font-medium shadow-2xs'
-                    : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                    ? 'bg-[#A8C8B5] text-[#191B19] font-bold border-[#A8C8B5] shadow-xs'
+                    : 'bg-[#202420] text-[#B8C0B6] hover:text-[#F1F0EA] hover:bg-[#343A34] border-[#485148]'
                 }`}
               >
                 {t === 'all' ? 'All' : t.toUpperCase()}
@@ -142,16 +142,16 @@ export function KnowledgeLibrary({
 
           {/* Indexing Status Pills */}
           <div className="flex items-center gap-1">
-            <span className="text-stone-400 mr-1 text-[11px] uppercase">Status:</span>
+            <span className="text-[#849082] mr-1 text-[11px] uppercase">Status:</span>
             {(['all', 'ready', 'pending', 'failed'] as const).map((s) => (
               <button
                 key={s}
                 type="button"
                 onClick={() => setStatusFilter(s)}
-                className={`px-2 py-0.5 rounded-md text-[11px] transition-colors cursor-pointer ${
+                className={`px-2 py-0.5 rounded-md text-[11px] transition-colors cursor-pointer border ${
                   statusFilter === s
-                    ? 'bg-stone-800 text-white font-medium shadow-2xs'
-                    : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                    ? 'bg-[#A8C8B5] text-[#191B19] font-bold border-[#A8C8B5] shadow-xs'
+                    : 'bg-[#202420] text-[#B8C0B6] hover:text-[#F1F0EA] hover:bg-[#343A34] border-[#485148]'
                 }`}
               >
                 {s === 'all' ? 'All' : s.charAt(0).toUpperCase() + s.slice(1)}
@@ -169,20 +169,20 @@ export function KnowledgeLibrary({
             {[1, 2, 3, 4].map((n) => (
               <div
                 key={n}
-                className="bg-stone-50 border border-stone-200 rounded-xl p-4 space-y-3 animate-pulse"
+                className="bg-[#202420] border border-[#485148] rounded-xl p-4 space-y-3 animate-pulse"
               >
                 <div className="flex justify-between">
-                  <div className="h-4 w-12 bg-stone-200 rounded-md" />
-                  <div className="h-4 w-16 bg-stone-200 rounded-md" />
+                  <div className="h-4 w-12 bg-[#343A34] rounded-md" />
+                  <div className="h-4 w-16 bg-[#343A34] rounded-md" />
                 </div>
-                <div className="h-4 w-3/4 bg-stone-200 rounded-md" />
+                <div className="h-4 w-3/4 bg-[#343A34] rounded-md" />
                 <div className="space-y-1.5">
-                  <div className="h-3 w-full bg-stone-200 rounded-md" />
-                  <div className="h-3 w-5/6 bg-stone-200 rounded-md" />
+                  <div className="h-3 w-full bg-[#343A34] rounded-md" />
+                  <div className="h-3 w-5/6 bg-[#343A34] rounded-md" />
                 </div>
-                <div className="pt-2 border-t border-stone-100 flex justify-between">
-                  <div className="h-3 w-16 bg-stone-200 rounded-md" />
-                  <div className="h-3 w-12 bg-stone-200 rounded-md" />
+                <div className="pt-2 border-t border-[#384038] flex justify-between">
+                  <div className="h-3 w-16 bg-[#343A34] rounded-md" />
+                  <div className="h-3 w-12 bg-[#343A34] rounded-md" />
                 </div>
               </div>
             ))}
@@ -190,7 +190,7 @@ export function KnowledgeLibrary({
         ) : error ? (
           /* Error State */
           <div className="p-6 text-center space-y-3">
-            <div className="text-xs text-rose-700 font-mono bg-rose-50 border border-rose-200 rounded-lg p-3">
+            <div className="text-xs text-[#FB7185] font-mono bg-[#2D1D20] border border-[#54222B] rounded-xl p-3">
               {error}
             </div>
             <Button variant="outline" size="sm" onClick={onRefresh}>

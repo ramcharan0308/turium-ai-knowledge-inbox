@@ -38,7 +38,7 @@ export const ItemCard = React.memo(function ItemCard({ item, onInspect }: ItemCa
   }
 
   return (
-    <article className="group bg-white border border-stone-200 hover:border-stone-300 rounded-xl p-4 transition-all shadow-2xs hover:shadow-xs flex flex-col justify-between space-y-3">
+    <article className="group bg-[#292D29] border border-[#485148] hover:border-[#5C665C] hover:bg-[#2E332E] rounded-xl p-4 transition-all duration-150 shadow-2xs hover:shadow-xs flex flex-col justify-between space-y-3">
       {/* Card Header */}
       <div className="space-y-1.5">
         <div className="flex items-center justify-between gap-2">
@@ -48,7 +48,7 @@ export const ItemCard = React.memo(function ItemCard({ item, onInspect }: ItemCa
           </div>
 
           <span
-            className="text-[11px] font-mono text-stone-400"
+            className="text-[11px] font-mono text-[#849082]"
             title={new Date(item.createdAt).toISOString()}
           >
             {formatRelativeTime(item.createdAt)}
@@ -56,7 +56,7 @@ export const ItemCard = React.memo(function ItemCard({ item, onInspect }: ItemCa
         </div>
 
         {/* Title */}
-        <h3 className="text-sm font-semibold text-stone-900 group-hover:text-stone-950 tracking-tight leading-snug line-clamp-2">
+        <h3 className="text-sm font-semibold text-[#F1F0EA] group-hover:text-white tracking-tight leading-snug line-clamp-2">
           {item.title}
         </h3>
 
@@ -67,7 +67,7 @@ export const ItemCard = React.memo(function ItemCard({ item, onInspect }: ItemCa
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="inline-flex items-center gap-1 text-[11px] font-mono text-teal-700 hover:text-teal-900 hover:underline max-w-full truncate"
+            className="inline-flex items-center gap-1 text-[11px] font-mono text-[#A8C8B5] hover:text-[#C0DACB] hover:underline max-w-full truncate"
           >
             <ExternalLink className="w-3 h-3 shrink-0" />
             <span className="truncate">{hostname || item.sourceUrl}</span>
@@ -76,14 +76,14 @@ export const ItemCard = React.memo(function ItemCard({ item, onInspect }: ItemCa
       </div>
 
       {/* Snippet Preview */}
-      <p className="text-xs text-stone-600 leading-relaxed line-clamp-3 font-normal">
+      <p className="text-xs text-[#B8C0B6] leading-relaxed line-clamp-3 font-normal">
         {item.snippet}
       </p>
 
       {/* Card Footer */}
-      <div className="pt-2 border-t border-stone-100 flex items-center justify-between text-xs font-mono text-stone-400">
+      <div className="pt-2 border-t border-[#384038] flex items-center justify-between text-xs font-mono text-[#849082]">
         <span className="flex items-center gap-1">
-          <Layers className="w-3 h-3 text-stone-400" />
+          <Layers className="w-3 h-3 text-[#849082]" />
           <span>
             {item.chunkCount} {item.chunkCount === 1 ? 'chunk' : 'chunks'}
           </span>
@@ -92,10 +92,10 @@ export const ItemCard = React.memo(function ItemCard({ item, onInspect }: ItemCa
         <button
           type="button"
           onClick={() => onInspect(item)}
-          className="inline-flex items-center gap-1 text-[11px] text-stone-600 hover:text-stone-900 hover:bg-stone-100 px-2 py-1 rounded-md transition-colors"
+          className="inline-flex items-center gap-1 text-[11px] text-[#B8C0B6] hover:text-[#F1F0EA] hover:bg-[#343A34] px-2 py-1 rounded-md transition-colors cursor-pointer"
           aria-label={`Inspect full content of "${item.title}"`}
         >
-          <Eye className="w-3 h-3 text-stone-500" />
+          <Eye className="w-3 h-3 text-[#849082]" />
           <span>Inspect</span>
         </button>
       </div>
