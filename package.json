@@ -1,0 +1,27 @@
+{
+  "name": "turium-ai-knowledge-inbox",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "server",
+    "client"
+  ],
+  "scripts": {
+    "dev:server": "npm --workspace=server run dev",
+    "dev:client": "npm --workspace=client run dev",
+    "dev": "npm run dev:server",
+    "build:server": "npm --workspace=server run build",
+    "build:client": "npm --workspace=client run build",
+    "build": "npm run build:server && npm run build:client",
+    "typecheck:server": "npm --workspace=server run typecheck",
+    "typecheck:client": "npm --workspace=client run typecheck",
+    "typecheck": "npm run typecheck:server && npm run typecheck:client",
+    "lint": "eslint ."
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.15.0",
+    "typescript-eslint": "^8.73.0"
+  }
+}
