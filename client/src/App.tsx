@@ -1,165 +1,164 @@
-import { useEffect, useState } from 'react';
-import { motion } from 'motion/react';
-import { Inbox, CheckCircle2, AlertCircle, Sparkles, Terminal } from 'lucide-react';
+import { useEffect, useState, useCallback } from 'react';
 import { api } from './api/client';
-import { HealthStatus } from './types';
+import { SavedItem, HealthStatus, IngestResponse } from './types';
+import { Header } from './components/layout/Header';
+import { KnowledgeCapture } from './components/capture/KnowledgeCapture';
+import { KnowledgeLibrary } from './components/library/KnowledgeLibrary';
+import { QueryDesk } from './components/query/QueryDesk';
+import { ToastProvider } from './components/common/Toast';
 
 export function App() {
   const [health, setHealth] = useState<HealthStatus | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [loadingHealth, setLoadingHealth] = useState(true);
+  const [healthError, setHealthError] = useState<string | null>(null);
 
+  const [items, setItems] = useState<SavedItem[]>([]);
+  const [totalItems, setTotalItems] = useState(0);
+  const [itemsLoading, setItemsLoading] = useState(true);
+  const [itemsError, setItemsError] = useState<string | null>(null);
+
+  const [offset, setOffset] = useState(0);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const PAGE_LIMIT = 20;
+
+  // Fetch system health
   useEffect(() => {
     api
       .checkHealth()
       .then((data) => {
         setHealth(data);
-        setError(null);
+        setHealthError(null);
       })
       .catch((err) => {
-        setError(err.message || 'Could not connect to backend server');
+        setHealthError(err.message || 'Could not connect to backend server');
       })
       .finally(() => {
-        setLoading(false);
+        setLoadingHealth(false);
       });
   }, []);
 
+  // Fetch initial items
+  const loadItems = useCallback(async () => {
+    setItemsLoading(true);
+    setItemsError(null);
+    try {
+      const res = await api.getItems({ limit: PAGE_LIMIT, offset: 0 });
+      setItems(res.items);
+      setTotalItems(res.total);
+      setOffset(res.items.length);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to load saved items';
+      setItemsError(msg);
+    } finally {
+      setItemsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadItems();
+  }, [loadItems]);
+
+  // Load more items (pagination)
+  const handleLoadMore = async () => {
+    if (loadingMore || items.length >= totalItems) return;
+    setLoadingMore(true);
+    try {
+      const res = await api.getItems({ limit: PAGE_LIMIT, offset });
+      setItems((prev) => [...prev, ...res.items]);
+      setOffset((prev) => prev + res.items.length);
+      setTotalItems(res.total);
+    } catch (err: unknown) {
+      // ignore or show error
+      console.error('Failed to load more items', err);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
+  // On successful ingestion, prepend new item and update count
+  const handleIngestSuccess = (ingested: IngestResponse) => {
+    const newItem: SavedItem = {
+      id: ingested.id,
+      type: ingested.type,
+      title: ingested.title,
+      sourceUrl: ingested.sourceUrl,
+      snippet: 'Indexing completed. Click inspect to view full document content.',
+      chunkCount: ingested.chunkCount,
+      createdAt: ingested.createdAt,
+      updatedAt: ingested.createdAt,
+      indexingStatus: ingested.indexingStatus,
+      indexingError: ingested.indexingError,
+    };
+
+    setItems((prev) => [newItem, ...prev.filter((i) => i.id !== newItem.id)]);
+    setTotalItems((prev) => prev + 1);
+
+    // After a brief moment, reload to get real snippet and updated chunk representations
+    setTimeout(() => {
+      api.getItems({ limit: PAGE_LIMIT, offset: 0 }).then((res) => {
+        setItems(res.items);
+        setTotalItems(res.total);
+      });
+    }, 1200);
+  };
+
+  const hasMore = items.length < totalItems;
+
   return (
-    <div className="min-h-screen flex flex-col bg-[#F8FAFC] text-[#0F172A]">
-      {/* Top Navigation */}
-      <header className="border-b border-slate-200 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-9 h-9 rounded-lg bg-teal-600 flex items-center justify-center text-white shadow-sm">
-              <Inbox className="w-5 h-5" />
+    <ToastProvider>
+      <div className="min-h-screen flex flex-col bg-[#FBFBFA] text-[#1C1917] antialiased selection:bg-teal-100 selection:text-teal-900">
+        {/* Workspace Navigation Header */}
+        <Header
+          health={health}
+          loadingHealth={loadingHealth}
+          healthError={healthError}
+          totalItems={totalItems}
+        />
+
+        {/* Main Content Area */}
+        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
+            {/* Left Rail: Knowledge Capture & Saved Library (lg: 7 cols) */}
+            <div className="lg:col-span-7 space-y-6">
+              {/* Knowledge Capture Desk */}
+              <KnowledgeCapture onIngestSuccess={handleIngestSuccess} />
+
+              {/* Saved Knowledge Library */}
+              <KnowledgeLibrary
+                items={items}
+                total={totalItems}
+                loading={itemsLoading}
+                error={itemsError}
+                onRefresh={loadItems}
+                onLoadMore={handleLoadMore}
+                hasMore={hasMore}
+                loadingMore={loadingMore}
+              />
             </div>
-            <div>
-              <span className="font-semibold text-slate-900 tracking-tight text-base">Turium AI</span>
-              <span className="ml-2 px-2 py-0.5 text-xs font-mono font-medium rounded-full bg-slate-100 text-slate-600 border border-slate-200">
-                Knowledge Inbox
-              </span>
-            </div>
-          </div>
 
-          <div className="flex items-center space-x-3">
-            {loading ? (
-              <span className="flex items-center text-xs font-mono text-slate-500">
-                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse mr-2" />
-                Connecting...
-              </span>
-            ) : error ? (
-              <span className="flex items-center text-xs font-mono text-rose-600 bg-rose-50 px-2.5 py-1 rounded-full border border-rose-200">
-                <AlertCircle className="w-3.5 h-3.5 mr-1.5" />
-                Backend Offline
-              </span>
-            ) : (
-              <span className="flex items-center text-xs font-mono text-teal-700 bg-teal-50 px-2.5 py-1 rounded-full border border-teal-200">
-                <CheckCircle2 className="w-3.5 h-3.5 mr-1.5 text-teal-600" />
-                Backend Healthy (Node {health?.nodeVersion})
-              </span>
-            )}
-          </div>
-        </div>
-      </header>
-
-      {/* Main Container */}
-      <main className="flex-1 max-w-6xl w-full mx-auto px-6 py-10">
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.25 }}
-          className="space-y-8"
-        >
-          {/* Hero Banner */}
-          <div className="border border-slate-200 rounded-2xl bg-white p-8 shadow-sm">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-              <div className="space-y-2 max-w-2xl">
-                <div className="inline-flex items-center space-x-2 text-xs font-mono font-semibold uppercase tracking-wider text-teal-600 bg-teal-50 px-2.5 py-1 rounded-md border border-teal-100">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>Phase 2 Foundation Ready</span>
-                </div>
-                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
-                  Grounded Knowledge Ingestion & Retrieval
-                </h1>
-                <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
-                  Save notes, ingest web articles with SSRF guardrails, generate semantic embeddings, and ask
-                  grounded questions with verifiable citations.
-                </p>
-              </div>
-
-              {/* Status Specs Card */}
-              <div className="bg-slate-50 rounded-xl p-4 border border-slate-200 min-w-[260px] text-xs font-mono space-y-2">
-                <div className="text-slate-400 font-semibold uppercase tracking-wider text-[10px]">
-                  System Diagnostics
-                </div>
-                <div className="flex justify-between py-1 border-b border-slate-200/60">
-                  <span className="text-slate-500">Database:</span>
-                  <span className="font-semibold text-slate-800">SQLite (node:sqlite)</span>
-                </div>
-                <div className="flex justify-between py-1 border-b border-slate-200/60">
-                  <span className="text-slate-500">Embedding:</span>
-                  <span className="font-semibold text-slate-800">text-embedding-3-small</span>
-                </div>
-                <div className="flex justify-between py-1">
-                  <span className="text-slate-500">API Gateway:</span>
-                  <span className="font-semibold text-slate-800">Express + Vite Proxy</span>
-                </div>
-              </div>
+            {/* Right Rail: Grounded Knowledge Query Desk (lg: 5 cols, sticky on desktop) */}
+            <div className="lg:col-span-5 lg:sticky lg:top-20 space-y-6">
+              <QueryDesk items={items} />
             </div>
           </div>
+        </main>
 
-          {/* Scaffold Status Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="border border-slate-200 rounded-xl bg-white p-6 shadow-xs space-y-3">
-              <div className="w-8 h-8 rounded-lg bg-teal-50 border border-teal-100 flex items-center justify-center text-teal-600">
-                <Inbox className="w-4 h-4" />
-              </div>
-              <h3 className="font-semibold text-slate-900 text-sm">1. Ingestion Pipeline</h3>
-              <p className="text-xs text-slate-500 leading-relaxed">
-                Accepts raw text notes and URLs. Extracts sanitized text, enforces SSRF protections, and chunks content.
-              </p>
-              <div className="text-[11px] font-mono text-slate-400 pt-2 border-t border-slate-100">
-                POST /ingest (Phase 3)
-              </div>
+        {/* Editorial Footer */}
+        <footer className="border-t border-stone-200 bg-white py-6 mt-12">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between text-xs font-mono text-stone-500 gap-3">
+            <div className="flex items-center space-x-2">
+              <span className="font-semibold text-stone-800">Turium AI</span>
+              <span>—</span>
+              <span>Knowledge Inbox</span>
             </div>
-
-            <div className="border border-slate-200 rounded-xl bg-white p-6 shadow-xs space-y-3">
-              <div className="w-8 h-8 rounded-lg bg-teal-50 border border-teal-100 flex items-center justify-center text-teal-600">
-                <Terminal className="w-4 h-4" />
-              </div>
-              <h3 className="font-semibold text-slate-900 text-sm">2. Vector Storage</h3>
-              <p className="text-xs text-slate-500 leading-relaxed">
-                SQLite database storing items and chunks. Vector embeddings stored and retrieved via fast in-memory dot product.
-              </p>
-              <div className="text-[11px] font-mono text-slate-400 pt-2 border-t border-slate-100">
-                GET /items (Phase 3)
-              </div>
-            </div>
-
-            <div className="border border-slate-200 rounded-xl bg-white p-6 shadow-xs space-y-3">
-              <div className="w-8 h-8 rounded-lg bg-teal-50 border border-teal-100 flex items-center justify-center text-teal-600">
-                <Sparkles className="w-4 h-4" />
-              </div>
-              <h3 className="font-semibold text-slate-900 text-sm">3. Grounded Q&amp;A</h3>
-              <p className="text-xs text-slate-500 leading-relaxed">
-                Retrieves top-K semantic chunks, provides anti-hallucination guardrails, and renders verifiable source citations.
-              </p>
-              <div className="text-[11px] font-mono text-slate-400 pt-2 border-t border-slate-100">
-                POST /query (Phase 4)
-              </div>
+            <div className="text-stone-400">
+              Clarity over beauty · Zero-hallucination RAG · Gemini 768d + Groq 120B
             </div>
           </div>
-        </motion.div>
-      </main>
-
-      {/* Footer */}
-      <footer className="border-t border-slate-200 bg-white py-6">
-        <div className="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-3 font-mono">
-          <span>Turium AI Assignment — AI Knowledge Inbox</span>
-          <span>Clarity over beauty · Zero-hallucination RAG</span>
-        </div>
-      </footer>
-    </div>
+        </footer>
+      </div>
+    </ToastProvider>
   );
 }
+
 export default App;

@@ -1,4 +1,5 @@
 export type ItemType = 'note' | 'url';
+export type IndexingStatus = 'pending' | 'ready' | 'failed';
 
 export interface SavedItem {
   id: string;
@@ -9,8 +10,20 @@ export interface SavedItem {
   chunkCount: number;
   createdAt: string;
   updatedAt: string;
-  indexingStatus: 'pending' | 'ready' | 'failed';
+  indexingStatus: IndexingStatus;
   indexingError?: string | null;
+  rawContent?: string | null;
+}
+
+export interface IngestResponse {
+  id: string;
+  type: ItemType;
+  title: string;
+  sourceUrl: string | null;
+  chunkCount: number;
+  indexingStatus: IndexingStatus;
+  indexingError: string | null;
+  createdAt: string;
 }
 
 export interface Citation {
@@ -43,4 +56,11 @@ export interface HealthStatus {
   embeddingModel: string;
   chatModel: string;
   timestamp: string;
+}
+
+export interface ListItemsResult {
+  items: SavedItem[];
+  total: number;
+  limit: number;
+  offset: number;
 }
